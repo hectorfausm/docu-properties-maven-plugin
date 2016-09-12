@@ -1,0 +1,32 @@
+  ------
+  Title
+  ------
+  Author
+ 
+ 
+docuProperties
+ 
+  Permite documentar los ficheros de propiedades de tus aplicaciones en diferentes formatos.
+
+ 
+* Goals Overview
+ 
+  Información general sobre los Goals.
+ 
+  * {{{./docu-properties-mojo.html}docu-properties:docu-properties}} Ejecuta la documentación de los ficheros de propiedades, alojados en los directorios de recursos, creando ficheros con la información resultante.
+
+  * {{{./docu-properties-inputs-mojo.html}docu-properties:docu-properties-inputs}} Ejecuta la documentación de los ficheros de propiedades, alojados en una o varias rutas establecidas por configuración.
+ 
+* Uso
+ 
+  Las instrucciones detalladas de uso se encuentran en la {{{./usage.html}página de uso}}.
+
+ 
+* Examples
+ 
+  To provide you with better understanding of some usages of the Plugin Name,
+  you can take a look into the following examples:
+ 
+  * {{{examples/example-one.html}Example Description One}}
+
+  * {{{examples/example-two.html}Example Description Two}}

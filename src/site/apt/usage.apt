@@ -1,0 +1,32 @@
+  ------
+  Title
+  ------
+  Author
+
+Uso
+
+	El plugin consta de dos goals, uno para la documentación de los directorios de recursos de un proyecto mevane y sus hijos y otros para la documentación de uno o varios directorios de recursos cualesquiera pasados por configuración.
+
+	La configuración de ambos plugin se realiza a través de la etiqueta \<configuration\>
++-------------------------------------------------------------------------------------------------------
+\<plugin\>
+	\<groupId\>es.home.plugins\</groupId\>
+	\<artifactId\>docu-properties-maven-plugin\</artifactId\>
+	\<version\>1.0.0\</version\>
+	\<executions\>
+		\<execution\>
+			\<id\>post-integration-docu\</id\>
+			\<phase\>post-integration-test\</phase\>
+			\<goals\>
+				\<goal\>docu-properties\</goal\>
+			\</goals\>
+		\</execution\>
+	\</executions\>
+	\<configuration\>
+		\<inputs\>
+			\<input\>D:/hfaus/Docu/Maven/chapter5/docuPropertiesMavenTest/src/main/resources\</input\>
+		\</inputs\>
+		\<output\>D:/hfaus/wsp/simBpm/target/docu-properties\</output\>
+	\</configuration\>
+\</plugin\>
++-------------------------------------------------------------------------------------------------------																									 
