@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.apache.maven.plugins.annotations.Parameter;
 
-import es.home.properties.exception.SiaPluginDocumentationException;
-import es.home.properties.exception.SiaPluginDocumentationExceptionCode;
+import es.home.properties.exception.PluginDocumentationException;
+import es.home.properties.exception.PluginDocumentationExceptionCode;
 import es.home.properties.model.DocumenterUnit;
 
 public abstract class DocuPropertiesAbstractWriteProperties extends DocuPropertiesAbstractMojo{
@@ -46,7 +46,7 @@ public abstract class DocuPropertiesAbstractWriteProperties extends DocuProperti
 
 	/** {@inheritDoc} */
 	@Override
-	public void proccesFile(Path file) throws SiaPluginDocumentationException {
+	public void proccesFile(Path file) throws PluginDocumentationException {
 		
 		PrintWriter writer=null;
 		
@@ -83,15 +83,15 @@ public abstract class DocuPropertiesAbstractWriteProperties extends DocuProperti
 				}
 			}
 		}catch (IOException e) {
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 	    		"Excepción producida al procesar un path",
-	    		SiaPluginDocumentationExceptionCode.ON_PROCESS_MOJO_FILE,
+	    		PluginDocumentationExceptionCode.ON_PROCESS_MOJO_FILE,
 	    		e
 	    	);
 		}catch(Exception e){
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 	    		"Excepción producida al procesar un path",
-	    		SiaPluginDocumentationExceptionCode.ON_PROCESS_MOJO_FILE_UNKNOWN,
+	    		PluginDocumentationExceptionCode.ON_PROCESS_MOJO_FILE_UNKNOWN,
 	    		e
 	    	);
 		}finally{

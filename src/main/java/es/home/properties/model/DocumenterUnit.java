@@ -127,27 +127,32 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 		
 		StringBuffer res = new StringBuffer();
 		
-		// Descricpión
+		// Descripción tanto para las propiedades como para las descripciones simples
 		if(addDescription){
 			addElement(res,description,annotationString);
 		}
-
-		// Estado
-		if(addState){
-			addElement(res,state,annotationString);
-		}
 		
-		// Ejemplo
-		if(addExample){
-			addElement(res,example,annotationString);
+		// Si se trata de una propiedad
+		if(propertyName!=null){
+			
+			// Estado
+			if(addState){
+				addElement(res,state,annotationString);
+			}
+			
+			// Ejemplo
+			if(addExample){
+				addElement(res,example,annotationString);
+			}
+			
+			res.append("\n"+propertyName+assignationAnnotationString);
 		}
-		
-		// Nombre de la porpiedad
-		res.append("\n"+propertyName+assignationAnnotationString);
 		
 		// Valor por entorno
 		if(environments==null){
-			res.append(getDefaultValue());
+			 if(getDefaultValue()!=null){
+				 res.append(getDefaultValue());
+			 }
 		}else if(environments.containsKey(environment) && environments.get(environment)!=null){
 			res.append(environments.get(environment).toString().replaceAll("^\\s+", ""));
 		}
@@ -191,11 +196,19 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 		if(element==null) return;
 		if(element.contains("\n")){
 			String[] lines = element.split("\n");
+			boolean start = true;
 			for (String line : lines) {
-				res.append("\n"+annotationString+" "+line);
+				if(!line.isEmpty()){
+					if(!start){
+						res.append("\n");
+					}else{
+						start = false;
+					}
+					res.append(annotationString+" "+line);
+				}
 			}
 		}else{
-			res.append(" "+annotationString+description);
+			res.append(annotationString+" "+description);
 		}
 	}
 	
@@ -208,9 +221,9 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	private boolean propertyNotPrintedToEnvironment(String environment) {
 		if(isVisibleWithValue()){
 			if(environments==null){
-				return getDefaultValue()==null;
+				return getDefaultValue()==null || getDefaultValue().length()<=0;
 			}else{
-				return !environments.containsKey(environment) || environments.get(environment)==null;
+				return !environments.containsKey(environment) || environments.get(environment)==null ||  environments.get(environment).length()<=0;
 			}
 		}
 		return false;

@@ -29,8 +29,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import es.home.properties.exception.SiaPluginDocumentationException;
-import es.home.properties.exception.SiaPluginDocumentationExceptionCode;
+import es.home.properties.exception.PluginDocumentationException;
+import es.home.properties.exception.PluginDocumentationExceptionCode;
 
 public abstract class ExcelAcces {
 	
@@ -52,9 +52,9 @@ public abstract class ExcelAcces {
 	 * Método que permite inicializar un fichero excel sin datos
 	 * @param excelType Tipo de fichero a inicializar
 	 * @return Devuelve un manejador de ficheros excel
-	 * @throws SiaPluginDocumentationException 
+	 * @throws PluginDocumentationException 
 	 * */
-	public static ExcelFile initExcel(ExcelType excelType, HeaderBean headerMap) throws SiaPluginDocumentationException {
+	public static ExcelFile initExcel(ExcelType excelType, HeaderBean headerMap) throws PluginDocumentationException {
 		return initExcel(null, excelType, headerMap);
 	}
 	
@@ -66,7 +66,7 @@ public abstract class ExcelAcces {
 	 * @param header Cabecera del fichero -> Si es nula, se toma como cabecera la primera fila del manejador
 	 * @return Devuelve un {@link ExcelFile} con la infromación de inicialización del fichero
 	 * */
-	public static ExcelFile initExcel(String filePath, ExcelType excelType, HeaderBean headerMap) throws SiaPluginDocumentationException{
+	public static ExcelFile initExcel(String filePath, ExcelType excelType, HeaderBean headerMap) throws PluginDocumentationException{
 		String errorMsg = "Error durante la inicialización del Fichero excel. ";
 		try {
 			ExcelFile instance = new ExcelFile();
@@ -95,21 +95,21 @@ public abstract class ExcelAcces {
             
             return instance;
 		} catch (FileNotFoundException e) {
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_INIT_EXCEL,
+				PluginDocumentationExceptionCode.ON_INIT_EXCEL,
 				e
 			);
 		} catch (IOException e) {
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_INIT_EXCEL,
+				PluginDocumentationExceptionCode.ON_INIT_EXCEL,
 				e
 			);
 		} catch (Exception e){
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_INIT_EXCEL_UNKNOWN,
+				PluginDocumentationExceptionCode.ON_INIT_EXCEL_UNKNOWN,
 				e
 			);
 		}
@@ -248,9 +248,9 @@ public abstract class ExcelAcces {
 	 * @param file Manejador de ficheros excel
 	 * @param header Nueva cabecera
 	 * @param color Enumerado con el nuevo color de la cabecera
-	 * @throws SiaPluginDocumentationException 
+	 * @throws PluginDocumentationException 
 	 * */
-	public static void addHeader(ExcelFile file, HeaderBean header) throws SiaPluginDocumentationException {
+	public static void addHeader(ExcelFile file, HeaderBean header) throws PluginDocumentationException {
 		
 		try{
 			//Se añade la cabecera
@@ -284,9 +284,9 @@ public abstract class ExcelAcces {
 			}
 		}catch(Exception e){
 			String errormsg = "Excecpión producida al añadir una cabecera";
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 				errormsg,
-				SiaPluginDocumentationExceptionCode.ON_CREATE_HEADER,
+				PluginDocumentationExceptionCode.ON_CREATE_HEADER,
 				e
 			);
 		}
@@ -296,10 +296,10 @@ public abstract class ExcelAcces {
 	 * MÃ©todo que permite aÃ±adir una fila en un manejador excel a partir de un objeto plano Bean
 	 * @param file Objeto manejador de ficheros excel
 	 * @param obj Objeto con la informaciÃ³n de la fila
-	 * @throws SiaPluginDocumentationException 
+	 * @throws PluginDocumentationException 
 	 * @throws SiaException 
 	 * */
-    public static void addBeanToRow(ExcelFile file, Serializable obj) throws SiaPluginDocumentationException{
+    public static void addBeanToRow(ExcelFile file, Serializable obj) throws PluginDocumentationException{
         List<Object> row = new ArrayList<Object>();
         for (String keyAttr: file.getHeader().getBeans().keySet()) {
         	int position = file.getHeader().getBeans().get(keyAttr).getPosition();
@@ -344,9 +344,9 @@ public abstract class ExcelAcces {
      * @param keyAttr Atributo del objeto.
      * @param obj Objeto con la información.
      * @return Devuelve el valor del objeto cuyo atributo contenido en obj coincide con la clave pasad por parámetro.
-     * @throws SiaPluginDocumentationException 
+     * @throws PluginDocumentationException 
      * */
-    public static final Object getValueFromField(String keyAttr, Serializable obj) throws SiaPluginDocumentationException{
+    public static final Object getValueFromField(String keyAttr, Serializable obj) throws PluginDocumentationException{
     	
     	try{
     	
@@ -369,9 +369,9 @@ public abstract class ExcelAcces {
 	    			}catch(ClassCastException e){
 	    				String errorMsg="El objeto de clase: "+actual.getClass()+" no es serializable."
 	    						+ " No se puede obtener el valor de "+thisKeyAttr;
-	    				throw new SiaPluginDocumentationException(
+	    				throw new PluginDocumentationException(
 	    					errorMsg,
-							SiaPluginDocumentationExceptionCode.ON_GET_VALUE_FROM_FIELD,
+							PluginDocumentationExceptionCode.ON_GET_VALUE_FROM_FIELD,
 							e
 						);
 	    			}
@@ -392,9 +392,9 @@ public abstract class ExcelAcces {
 	                    res = f.get(obj);
 	                } catch (IllegalAccessException e) {
 	                	String errorMsg="No se puede acceder al atributo: "+keyAttr+" del objeto de la clase "+obj.getClass();
-	        			throw new SiaPluginDocumentationException(
+	        			throw new PluginDocumentationException(
 	    					errorMsg,
-							SiaPluginDocumentationExceptionCode.ON_GET_VALUE_FROM_FIELD,
+							PluginDocumentationExceptionCode.ON_GET_VALUE_FROM_FIELD,
 							e
 						);
 	                }finally {
@@ -403,13 +403,13 @@ public abstract class ExcelAcces {
 	                return res;
 	            }
 	    	}
-    	}catch(SiaPluginDocumentationException e){
+    	}catch(PluginDocumentationException e){
     		throw e;
     	}catch(Exception e){
     		String errorMsg = "Excepción desconocida producida durante la obtención de un valor por field";
-    		throw new SiaPluginDocumentationException(
+    		throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_GET_VALUE_FROM_FIELD_UNKNOWN,
+				PluginDocumentationExceptionCode.ON_GET_VALUE_FROM_FIELD_UNKNOWN,
 				e
 			);
     	}
@@ -419,9 +419,9 @@ public abstract class ExcelAcces {
 	/**
 	 * Método que permite reescribir el fichero excel
 	 * @param file Objeto excel con los datos a reescribir
-	 * @throws SiaPluginDocumentationException 
+	 * @throws PluginDocumentationException 
 	 * */
-	public static void writeFile(ExcelFile file) throws SiaPluginDocumentationException{
+	public static void writeFile(ExcelFile file) throws PluginDocumentationException{
 		writeFile(file, file.getPathFile());
 	}
 	
@@ -430,9 +430,9 @@ public abstract class ExcelAcces {
 	 * @param file Objeto excel con los datos a reescribir
 	 * @param path Dirección y nombre del nuevo fichero sin extensión.
 	 * @return Devuelve la dirección del fichero con su nombre y extensión
-	 * @throws SiaPluginDocumentationException 
+	 * @throws PluginDocumentationException 
 	 * */
-	public static String writeFile(ExcelFile file, String path) throws SiaPluginDocumentationException{
+	public static String writeFile(ExcelFile file, String path) throws PluginDocumentationException{
 		try {
 			String realPath = path+"."+file.getType().getExtension();
 			File fileMkdirs = new File(realPath);
@@ -445,23 +445,23 @@ public abstract class ExcelAcces {
             return realPath;
         } catch (FileNotFoundException e) {
         	String errorMsg="El fichero que se intenta crear: "+path+" No es un fichero correcto o no puede ser abierto";
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_WRITE_FILE,
+				PluginDocumentationExceptionCode.ON_WRITE_FILE,
 				e
 			);
         } catch (IOException e) {
         	String errorMsg="Error de entrada salida en la escritura del fichero: "+path;
-        	throw new SiaPluginDocumentationException(
+        	throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_WRITE_FILE,
+				PluginDocumentationExceptionCode.ON_WRITE_FILE,
 				e
 			);
         } catch(Exception e){
         	String errorMsg="Excepción desconocida al escribir un fichero excel";
-        	throw new SiaPluginDocumentationException(
+        	throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_WRITE_FILE_UNKNOWN,
+				PluginDocumentationExceptionCode.ON_WRITE_FILE_UNKNOWN,
 				e
 			);
         }
@@ -471,21 +471,21 @@ public abstract class ExcelAcces {
 	 * Método que permite cerrar el fichero excel
 	 * @param excelFile Elemento con la información del fichero
 	 * */
-	public static void closeExcel(ExcelFile excelFile) throws SiaPluginDocumentationException{
+	public static void closeExcel(ExcelFile excelFile) throws PluginDocumentationException{
 		try {
 			excelFile.getWorkbook().close();
 		} catch (IOException e) {
 			String errorMsg="No se pudo cerrar el manejador de ficheros";
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_CLOSE_XCEL,
+				PluginDocumentationExceptionCode.ON_CLOSE_XCEL,
 				e
 			);
 		} catch(Exception e){
 			String errorMsg="Excepción desconocida al cerrar un fichero excel";
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_CLOSE_XCEL_UNKNOWN,
+				PluginDocumentationExceptionCode.ON_CLOSE_XCEL_UNKNOWN,
 				e
 			);
 		}
@@ -497,7 +497,7 @@ public abstract class ExcelAcces {
 	 * @param formatDate Formateador de la fecha. Este campo solo es necesario si la fecha es de formato cadena
 	 * @throws ParseException En caso de que existe algún error con el parseo de la fecha en formato cadena
 	 * */
-	public static Date gateDateFromXMLNumeric(Object date, SimpleDateFormat formatDate) throws SiaPluginDocumentationException{
+	public static Date gateDateFromXMLNumeric(Object date, SimpleDateFormat formatDate) throws PluginDocumentationException{
 		String errorMsg = "Excepción producida durante el parseo de un fecha excel a una fecha java";
 		try {
 			if(date instanceof String){
@@ -512,15 +512,15 @@ public abstract class ExcelAcces {
 				return DateUtil.getJavaDate(((Number)date).doubleValue());
 			}
 		} catch (ParseException e) {
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_PARSE_DATE,
+				PluginDocumentationExceptionCode.ON_PARSE_DATE,
 				e
 			);
 		} catch(Exception e){
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 				errorMsg,
-				SiaPluginDocumentationExceptionCode.ON_PARSE_DATE_UNKNOWN,
+				PluginDocumentationExceptionCode.ON_PARSE_DATE_UNKNOWN,
 				e
 			);
 		}
@@ -530,9 +530,9 @@ public abstract class ExcelAcces {
 	 * Método que permite ajustar automátciamente el tamaño de todas las columnas
 	 * del fichero excel al máximo tamaño de todas las filas.
 	 * @param excelFile Fichero excel al que se deben ajustar el tamño de las columnas
-	 * @throws SiaPluginDocumentationException 
+	 * @throws PluginDocumentationException 
 	 * */
-	public static void autoSizeColumns(ExcelFile excelFile) throws SiaPluginDocumentationException {
+	public static void autoSizeColumns(ExcelFile excelFile) throws PluginDocumentationException {
 		try{
 			Row row = excelFile.getSheet().getRow(0);
 			int size = row.getLastCellNum();
@@ -540,9 +540,9 @@ public abstract class ExcelAcces {
 				excelFile.getSheet().autoSizeColumn(colNum,true);
 			}
 		}catch(Exception e){
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 				"Excepción producida durante el ajuste automático del tamaño de las filas de un fichero excel",
-				SiaPluginDocumentationExceptionCode.ON_AUTOADJUST_EXCEL_ROWS,
+				PluginDocumentationExceptionCode.ON_AUTOADJUST_EXCEL_ROWS,
 				e
 			);
 		}

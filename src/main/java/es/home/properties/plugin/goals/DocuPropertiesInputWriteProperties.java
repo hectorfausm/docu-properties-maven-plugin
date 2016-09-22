@@ -5,7 +5,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import es.home.properties.exception.SiaPluginDocumentationException;
+import es.home.properties.exception.PluginDocumentationException;
 
 /**
  * Permite escribir un fichero de propiedades en función de un entorno para uno o n directorios.
@@ -35,7 +35,7 @@ public class DocuPropertiesInputWriteProperties extends DocuPropertiesAbstractWr
 			
 				proccessPath(input);
 			}
-		}catch (SiaPluginDocumentationException e) {
+		}catch (PluginDocumentationException e) {
 			getLog().error(e.geti18Message(),e);
 		}
 	}

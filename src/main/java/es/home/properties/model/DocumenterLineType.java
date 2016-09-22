@@ -27,5 +27,7 @@ public enum DocumenterLineType {
 	/** Línea, que si existe, determina que una propiedad solo será escribible si tiene valor */
 	VISIBLE_WITH_VALUE,
 	/** Ningún tipo útil para la aplicación */
-	ANYTHING
+	ANYTHING,
+	/** Línea de iniciaode comentario simple */
+	INIT_SIMPLE_COMMENT
 }

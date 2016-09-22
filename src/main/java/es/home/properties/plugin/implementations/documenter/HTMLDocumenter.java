@@ -2,7 +2,7 @@ package es.home.properties.plugin.implementations.documenter;
 
 import org.apache.maven.plugin.logging.Log;
 
-import es.home.properties.exception.SiaPluginDocumentationException;
+import es.home.properties.exception.PluginDocumentationException;
 import es.home.properties.model.DocumenterUnit;
 import es.home.properties.model.MavenDocumenterPropertiesConfiguration;
 
@@ -19,13 +19,13 @@ public class HTMLDocumenter extends PseudoImplementationDocumenter{
 
 	/** {@inheritDoc} */
 	@Override
-	public void initializeFile() throws SiaPluginDocumentationException {
+	public void initializeFile() throws PluginDocumentationException {
 		// TODO
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public void closeFile() throws SiaPluginDocumentationException {
+	public void closeFile() throws PluginDocumentationException {
 		// TODO Auto-generated method stub
 		
 	}
@@ -33,7 +33,7 @@ public class HTMLDocumenter extends PseudoImplementationDocumenter{
 	/** {@inheritDoc} */
 	@Override
 	public void documentUnit(DocumenterUnit documenterUnit)
-			throws SiaPluginDocumentationException {
+			throws PluginDocumentationException {
 		// TODO Auto-generated method stub
 		
 	}
@@ -41,7 +41,7 @@ public class HTMLDocumenter extends PseudoImplementationDocumenter{
 	/** {@inheritDoc} */
 	@Override
 	public void writeFile(String fileName)
-			throws SiaPluginDocumentationException {
+			throws PluginDocumentationException {
 		// TODO Auto-generated method stub
 		
 	}

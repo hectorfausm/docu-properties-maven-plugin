@@ -7,7 +7,7 @@ import java.util.ResourceBundle;
  * Excepciones del plugin
  * @author hfaus
  * */
-public class SiaPluginDocumentationException extends Exception{
+public class PluginDocumentationException extends Exception{
 	/** Serial Version UID */
 	private static final long serialVersionUID = 1L;
 	
@@ -23,12 +23,12 @@ public class SiaPluginDocumentationException extends Exception{
 	/**
 	 * Código del mensaje.
 	 * */
-	private SiaPluginDocumentationExceptionCode code;
+	private PluginDocumentationExceptionCode code;
 	
 	/**
 	 * Contructor
 	 * */
-	public SiaPluginDocumentationException(String msg, SiaPluginDocumentationExceptionCode code, Throwable e) {
+	public PluginDocumentationException(String msg, PluginDocumentationExceptionCode code, Throwable e) {
 		super(msg, e);
 		this.code = code;
 	}
@@ -36,7 +36,7 @@ public class SiaPluginDocumentationException extends Exception{
 	/**
 	 * Contructor
 	 * */
-	public SiaPluginDocumentationException(String msg, SiaPluginDocumentationExceptionCode code) {
+	public PluginDocumentationException(String msg, PluginDocumentationExceptionCode code) {
 		super(msg);
 		this.code = code;
 	}
@@ -44,14 +44,14 @@ public class SiaPluginDocumentationException extends Exception{
 	/**
 	 * Contructor
 	 * */
-	public SiaPluginDocumentationException(String msg) {
+	public PluginDocumentationException(String msg) {
 		super(msg);
 	}
 	
 	/**
 	 * Contructor
 	 * */
-	public SiaPluginDocumentationException(SiaPluginDocumentationExceptionCode code) {
+	public PluginDocumentationException(PluginDocumentationExceptionCode code) {
 		super();
 		this.code = code;
 	}
@@ -64,7 +64,7 @@ public class SiaPluginDocumentationException extends Exception{
 	}
 	
 	// ACCEDENTES
-	public SiaPluginDocumentationExceptionCode getCode() {
+	public PluginDocumentationExceptionCode getCode() {
 		return code;
 	}
 }

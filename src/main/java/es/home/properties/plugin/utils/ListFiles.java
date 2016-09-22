@@ -8,7 +8,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.maven.plugin.logging.Log;
 
-import es.home.properties.exception.SiaPluginDocumentationException;
+import es.home.properties.exception.PluginDocumentationException;
 import es.home.properties.plugin.goals.DocuPropertiesAbstractMojo;
 
 /**
@@ -40,7 +40,7 @@ public class ListFiles extends SimpleFileVisitor<Path> {
 			mojoPlugin.proccesFile(file);	
 		}catch(SecurityException se){
 			LOGGER.error("Excepción producida por la seguridad del fichero: "+file.toString(),se);
-		} catch (SiaPluginDocumentationException e) {
+		} catch (PluginDocumentationException e) {
 			LOGGER.error("Excepción interna: "+file.toString(),e);
 		}
 		return FileVisitResult.CONTINUE;

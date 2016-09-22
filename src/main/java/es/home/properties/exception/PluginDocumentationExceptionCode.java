@@ -4,7 +4,7 @@ package es.home.properties.exception;
  * Códigos de excepciones SPNEGO
  * @author hfaus
  * */
-public enum SiaPluginDocumentationExceptionCode {
+public enum PluginDocumentationExceptionCode {
 	
 	// EXCECPIONES GENERICAS
 	/** Excepción genérica */
@@ -58,7 +58,7 @@ public enum SiaPluginDocumentationExceptionCode {
 	 * */
 	private String prefix;
 
-	private SiaPluginDocumentationExceptionCode(int internNumber, String prefix) {
+	private PluginDocumentationExceptionCode(int internNumber, String prefix) {
 		this.internNumber = internNumber;
 		this.prefix = prefix;
 	}

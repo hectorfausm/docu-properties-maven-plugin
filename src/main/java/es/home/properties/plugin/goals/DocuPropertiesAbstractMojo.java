@@ -16,8 +16,8 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import es.home.properties.exception.SiaPluginDocumentationException;
-import es.home.properties.exception.SiaPluginDocumentationExceptionCode;
+import es.home.properties.exception.PluginDocumentationException;
+import es.home.properties.exception.PluginDocumentationExceptionCode;
 import es.home.properties.model.DocumenterLineType;
 import es.home.properties.model.DocumenterType;
 import es.home.properties.model.DocumenterUnit;
@@ -78,6 +78,10 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	@Parameter(defaultValue = "=")
 	private String asignationAnnotationString;
 
+	/** Atributo que indica el inicio de una propiedad a documentar */
+	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"SimpleComment")
+	private String attrsimplecomment;
+	
 	/** Atributo que indica el inicio de una propiedad a documentar */
 	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"Documented")
 	private String attrinit;
@@ -147,6 +151,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			getLog().info("Obteniendo la configuración del plugin");
 			this.configuration = new MavenDocumenterPropertiesConfiguration();
 			this.configuration.setAnnotationString(this.annotationString);
+			this.configuration.setAttrSimpleComment(this.attrsimplecomment);
 			this.configuration.setAsignationAnnotationString(this.asignationAnnotationString);
 			this.configuration.setAttrdescription(this.attrdescription);
 			this.configuration.setAttrexample(this.attrexample);
@@ -169,9 +174,9 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	/**
 	 * Permite procesar los recoursos de un path
 	 * @param resourcePath Path a procesar
-	 * @throws SiaPluginDocumentationException 
+	 * @throws PluginDocumentationException 
 	 * */
-	protected void proccessPath(String resourcePath) throws SiaPluginDocumentationException {
+	protected void proccessPath(String resourcePath) throws PluginDocumentationException {
 		getLog().info("Codificando los recursos alojados en: "+resourcePath);
 		try {
 	      	Path path = Paths.get(resourcePath);
@@ -180,15 +185,15 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		      	Files.walkFileTree(path, listFiles);
 	      	}
 	    } catch (IOException ex) {
-	    	throw new SiaPluginDocumentationException(
+	    	throw new PluginDocumentationException(
 	    		"Excepción producida al procesar un path: "+resourcePath,
-	    		SiaPluginDocumentationExceptionCode.ON_PROCESS_MOJO_PATH,
+	    		PluginDocumentationExceptionCode.ON_PROCESS_MOJO_PATH,
 	    		ex
 	    	);
 	  	} catch(Exception e){
-	  		throw new SiaPluginDocumentationException(
+	  		throw new PluginDocumentationException(
 	    		"Excepción desconocida producida al procesar un path",
-	    		SiaPluginDocumentationExceptionCode.ON_PROCESS_MOJO_PATH_UNKNOWN,
+	    		PluginDocumentationExceptionCode.ON_PROCESS_MOJO_PATH_UNKNOWN,
 	    		e
 	    	);
 	  	}
@@ -197,9 +202,9 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	/** 
 	 * Permite procesar un fichero de texto y documentarlo
 	 * @param file Fichero a procesar 
-	 * @throws SiaPluginDocumentationException 
+	 * @throws PluginDocumentationException 
 	 */
-	public abstract void proccesFile(Path file) throws SiaPluginDocumentationException;
+	public abstract void proccesFile(Path file) throws PluginDocumentationException;
 
 	/**
 	 * Obtiene un documentador singleton a partir de la factoría fde documentadores
@@ -284,6 +289,11 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 					setVisibleWithValue(auxDocumenterUnit);
 					lastDocumenterLineType = DocumenterLineType.VISIBLE_WITH_VALUE;
 					break;
+				case INIT_SIMPLE_COMMENT:
+					auxDocumenterUnit = setInitValue(auxDocumenterUnit,lastDocumenterLineType);
+					lastDocumenterLineType = DocumenterLineType.INIT_SIMPLE_COMMENT;
+					startDocumenterUnit = true;
+					break;
 				default:
 					// DO NOTHING
 					break;
@@ -307,7 +317,6 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	private void setAnythingValue(Boolean startAnnotation, String line,
 			DocumenterUnit auxDocumenterUnit,
 			DocumenterLineType lastDocumenterLineType) {
-		
 		// Sólo se pueden añadir líneas a los valores propios de la aplicación, no a los extendidos
 		if(lastDocumenterLineType!=DocumenterLineType.FINISH 
 		   && lastDocumenterLineType!=DocumenterLineType.INIT
@@ -315,7 +324,11 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		   && startAnnotation){
 			switch(lastDocumenterLineType){
 				case DESCRIPTION:
+				case INIT_SIMPLE_COMMENT:
 					String description = auxDocumenterUnit.getDescription();
+					if(description == null){
+						description="";
+					}
 					description+="\n"+getConfiguration().getLineWithoutAnnotation(line);
 					auxDocumenterUnit.setDescription(description);
 					break;
@@ -429,10 +442,12 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		if(startAnnotation){
 			String lineThis = getConfiguration().getValueFromLine(line,DocumenterLineType.FINISH);
 			int indexOf = lineThis.indexOf(asignationAnnotationString);
-			String propertyName = lineThis.substring(0,indexOf);
-			String defaultValue = lineThis.substring(indexOf+1,lineThis.length());
-			auxDocumenterUnit.setPropertyName(propertyName);
-			auxDocumenterUnit.setDefaultValue(defaultValue);
+			if(indexOf>=0){
+				String propertyName = lineThis.substring(0,indexOf);
+				String defaultValue = lineThis.substring(indexOf+1,lineThis.length());
+				auxDocumenterUnit.setPropertyName(propertyName);
+				auxDocumenterUnit.setDefaultValue(defaultValue);
+			}
 			units.add(auxDocumenterUnit);
 		}
 		return auxDocumenterUnit;

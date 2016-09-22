@@ -8,8 +8,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.model.Resource;
 
-import es.home.properties.exception.SiaPluginDocumentationException;
-import es.home.properties.exception.SiaPluginDocumentationExceptionCode;
+import es.home.properties.exception.PluginDocumentationException;
+import es.home.properties.exception.PluginDocumentationExceptionCode;
 import es.home.properties.model.DocumenterUnit;
 
 /**
@@ -39,14 +39,14 @@ public class DocuPropertiesMojo extends DocuPropertiesAbstractMojo
 					}
 				}
 			}
-		}catch(SiaPluginDocumentationException e){
+		}catch(PluginDocumentationException e){
 			getLog().error(e.geti18Message(),e);
 		}
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public void proccesFile(Path file) throws SiaPluginDocumentationException{
+	public void proccesFile(Path file) throws PluginDocumentationException{
 		try{
 			if(isFileInExtensions(file.toString())){
 				
@@ -83,17 +83,17 @@ public class DocuPropertiesMojo extends DocuPropertiesAbstractMojo
 				}
 			}
 		}catch (IOException e) {
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 	    		"Excepción producida al procesar un path",
-	    		SiaPluginDocumentationExceptionCode.ON_PROCESS_MOJO_FILE,
+	    		PluginDocumentationExceptionCode.ON_PROCESS_MOJO_FILE,
 	    		e
 	    	);
-		}catch (SiaPluginDocumentationException e){
+		}catch (PluginDocumentationException e){
 			throw e;
 		}catch(Exception e){
-			throw new SiaPluginDocumentationException(
+			throw new PluginDocumentationException(
 	    		"Excepción producida al procesar un path",
-	    		SiaPluginDocumentationExceptionCode.ON_PROCESS_MOJO_FILE_UNKNOWN,
+	    		PluginDocumentationExceptionCode.ON_PROCESS_MOJO_FILE_UNKNOWN,
 	    		e
 	    	);
 		}

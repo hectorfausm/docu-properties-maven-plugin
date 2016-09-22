@@ -7,7 +7,7 @@ package es.home.properties.exception;
 public interface Prefix {
 	
 	/** Prefijo general */
-	public static final String GENERAL 				= "SPNEGO";
+	public static final String GENERAL 				= "GENERAL";
 	
 	/** Prefijo para las excepciones generadas por la implementación para ficehros excel */
 	public static final String EXCEL				= "EXCEL";

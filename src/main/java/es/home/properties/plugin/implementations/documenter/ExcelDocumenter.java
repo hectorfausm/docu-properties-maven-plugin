@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.maven.plugin.logging.Log;
 
-import es.home.properties.exception.SiaPluginDocumentationException;
+import es.home.properties.exception.PluginDocumentationException;
 import es.home.properties.model.DocumenterUnit;
 import es.home.properties.model.MavenDocumenterPropertiesConfiguration;
 import es.home.properties.plugin.excel.CellHeaderBean;
@@ -45,15 +45,15 @@ public class ExcelDocumenter extends PseudoImplementationDocumenter{
 	/** {@inheritDoc} 
 	 * @throws SiaException */
 	@Override
-	public void closeFile() throws SiaPluginDocumentationException {
+	public void closeFile() throws PluginDocumentationException {
 		getLogger().debug("Cerrando el fichero");
 		ExcelAcces.closeExcel(excelFile);
 	}
 
 	/** {@inheritDoc} 
-	 * @throws SiaPluginDocumentationException */
+	 * @throws PluginDocumentationException */
 	@Override
-	public void documentUnit(DocumenterUnit documenterUnit) throws SiaPluginDocumentationException {
+	public void documentUnit(DocumenterUnit documenterUnit) throws PluginDocumentationException {
 		ExcelAcces.addBeanToRow(excelFile, documenterUnit);
 		getLogger().debug("La cabecera para esta fila es: "+excelFile.getHeader().getBeans());
 		if(documenterUnit.getEnvironments()!=null){
@@ -80,9 +80,9 @@ public class ExcelDocumenter extends PseudoImplementationDocumenter{
 	}
 
 	/** {@inheritDoc} 
-	 * @throws SiaPluginDocumentationException */
+	 * @throws PluginDocumentationException */
 	@Override
-	public void initializeFile() throws SiaPluginDocumentationException {
+	public void initializeFile() throws PluginDocumentationException {
 		Map<String,CellHeaderBean> beanMap = new HashMap<String, CellHeaderBean>();
 		int cont = 0;
 		beanMap.put(PROPERTY_NAME_ID, new CellHeaderBean("Propiedad", cont++));
@@ -102,7 +102,7 @@ public class ExcelDocumenter extends PseudoImplementationDocumenter{
 	/** {@inheritDoc} */
 	@Override
 	public void writeFile(String fileName)
-			throws SiaPluginDocumentationException {
+			throws PluginDocumentationException {
 		
 		getLogger().info("Autoajustando el tamaño de las columnas");
 		ExcelAcces.autoSizeColumns(excelFile);

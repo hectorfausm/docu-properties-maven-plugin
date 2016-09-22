@@ -7,7 +7,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 
-import es.home.properties.exception.SiaPluginDocumentationException;
+import es.home.properties.exception.PluginDocumentationException;
 
 @Mojo(name="write-properties", requiresProject=true)
 public class DocuPropertiesWriteProperties extends DocuPropertiesAbstractWriteProperties{
@@ -28,7 +28,7 @@ public class DocuPropertiesWriteProperties extends DocuPropertiesAbstractWritePr
 					}
 				}
 			}
-		}catch(SiaPluginDocumentationException e){
+		}catch(PluginDocumentationException e){
 			getLog().error(e.geti18Message(),e);
 		}
 	}

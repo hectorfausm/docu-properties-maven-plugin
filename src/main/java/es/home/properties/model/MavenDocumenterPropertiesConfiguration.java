@@ -75,6 +75,9 @@ public class MavenDocumenterPropertiesConfiguration {
 	/** Atributo que determina el tipo de codificación de los ficheros de propiedades */
 	private String charset;
 	
+	/** Atributo que indica que un bloque de comentarios es un comentario simple */
+	private String attrsimplecomment;
+	
 	/** Logger */
 	private Log logger;
 	
@@ -93,18 +96,24 @@ public class MavenDocumenterPropertiesConfiguration {
 	
 	// PROPIEDADES ESTATICAS PRIVADAS
 	private String DEFAULT_PROPERTIES_EXTENSION = "properties";
-
+	
 	/**
 	 * Obtiene el tipo de línea.
 	 * @param line Línea de la que extraer el tipo de línea
+	 * @param lastDocumenterLineType 
 	 * @return Devuleve una instancia de {@link DocumenterLineType}
 	 * */
 	public DocumenterLineType getLineType(String line) {
 		DocumenterLineType res = DocumenterLineType.ANYTHING;
-		if(!isLineAnnotation(line) && line.length()>0 && CharUtils.isAsciiPrintable(line.charAt(0))){
+		// Si la línea no es un comentario y la línea es un retorno de carro o otro carácter imprimible, se trata de un final
+		if(!isLineAnnotation(line) && ((!line.isEmpty() && CharUtils.isAsciiPrintable(line.charAt(0))) || line.isEmpty())){
 			return DocumenterLineType.FINISH;
+			
+		// Si la línea es un comentario
 		}else if(isLineAnnotation(line)){
 			int firstAnnotationIn = line.indexOf(ANNOTATION_DEFINED_STRING);
+			
+			// Si la línea es una anotción
 			if(firstAnnotationIn>0){
 				String lineCopy = line.substring(firstAnnotationIn); 
 				logger.debug("Obteniendo el tipo de la línea a partir de la subcadena: \""+lineCopy+"\"");
@@ -122,28 +131,16 @@ public class MavenDocumenterPropertiesConfiguration {
 					res = DocumenterLineType.ENVIRONMENT_VALUE;
 				}else if(lineCopy.startsWith(attrvisiblewithvalue)){
 					res = DocumenterLineType.VISIBLE_WITH_VALUE;
+				}else if(lineCopy.startsWith(attrsimplecomment)){
+					res = DocumenterLineType.INIT_SIMPLE_COMMENT;
 				}
+				
+			// Si no, es cualquier cosa imprimible
 			}else{
 				res = DocumenterLineType.ANYTHING;
 			}
 		}
 		return res;
-	}
-
-	/**
-	 * Determina si se trata de uno de los valores de entorno
-	 * @param lineCopy Línea a tratar sin el comentario y con la arroba como primer elemento
-	 * @return Devuelve true si se trata del caso, en caso contrario devuelve false.
-	 * */
-	private boolean isEnvironmentValue(String lineCopy) {
-		if(getEnvironments()!=null){
-			for (String environment : getEnvironments()) {
-				if(lineCopy.startsWith((ANNOTATION_DEFINED_STRING)+environment)){
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 	
 	/**
@@ -376,6 +373,18 @@ public class MavenDocumenterPropertiesConfiguration {
 		return readCharsets;
 	}
 	
+	public String getAttrsimplecomment() {
+		return attrsimplecomment;
+	}
+
+	/**
+	 * Establece un Atributo para Un comentario simple
+	 * @param attrsimplecomment
+	 */
+	public void setAttrSimpleComment(String attrsimplecomment) {
+		this.attrsimplecomment = attrsimplecomment;
+	}
+	
 	/**
 	 * Determina el indexOf de un atributo de entorno
 	 * @param line linea de la cual extraer el valor
@@ -392,5 +401,21 @@ public class MavenDocumenterPropertiesConfiguration {
 			}					
 		}
 		return -1;
+	}
+
+	/**
+	 * Determina si se trata de uno de los valores de entorno
+	 * @param lineCopy Línea a tratar sin el comentario y con la arroba como primer elemento
+	 * @return Devuelve true si se trata del caso, en caso contrario devuelve false.
+	 * */
+	private boolean isEnvironmentValue(String lineCopy) {
+		if(getEnvironments()!=null){
+			for (String environment : getEnvironments()) {
+				if(lineCopy.startsWith((ANNOTATION_DEFINED_STRING)+environment)){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

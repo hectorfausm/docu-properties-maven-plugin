@@ -14,7 +14,7 @@ Existen dos bloques distintos de mojos en este proyecto:
     - **docu-properties-input-write:** Lee n ficheros de propiedades alojados en n directorios, y con la información obtenida compila n ficheros de propiedades resultado
 
 ## Sistema de anotaciones
-Este plugin se basa en un sistema de etiquetas situado en los bloques de comentarios de los ficheros de propiedades para su funcionamiento. Existen dos bloques básicos de anotaciones que vienen precedidos por un cáracter elegido en el plguin por configuración. Por defecto, el valor es `@`:
+Este plugin se basa en un sistema de etiquetas situado en los bloques de comentarios de los ficheros de propiedades para su funcionamiento. Entendiendo un bloque de comentario como el conjunto de líneas de comentarios que están separados de otros bloques por un espacio o por un carácter imprimible que no sea un caracter de comentario. Se entiende por etiqueta cualquier palabra dentro de un bloque de comentarios precedida por el caracter `@`. Existen dos bloques de anotaciones distintos:
 - **SimpleComment:** Esta anotación permite imprimir un bloque de comentarios tal cual está escrito en el fichero. 
 
 Ejemplo:
