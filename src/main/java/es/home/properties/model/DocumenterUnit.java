@@ -18,10 +18,10 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	/** Estado de la propiedad */
 	private String state;
 	
-	/** Estado de la propiedad */
+	/** TODO Obligatorio */
 	private String madatory;
 	
-	/** Estado de la propiedad */
+	/** TODO Patrón de la propiedad */
 	private String pattern;
 	
 	/** Ejemplos */
@@ -30,11 +30,17 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	/** Valores posibles para la propiedad */
 	private String values;
 	
-	/** Valores posibles para la propiedad */
+	/** TODO Valores posibles para la propiedad */
 	private String[] possibleValues;
 	
 	/** Valores para los diferentes entornos */
 	private Map<String,String> environments;
+	
+	/**
+	 * Determina si la unidad de documentación debe ser solo vivisble si contiene valor
+	 * En caso de ser false. Siempre será visible
+	 * */
+	private boolean visibleWithValue;
 	
 	/**
 	 * Valor por defecto que será asiognado a una propiedad en caso de no exisitir 
@@ -79,6 +85,12 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	public void setEnvironments(Map<String, String> environments) {
 		this.environments = environments;
 	}
+	public boolean isVisibleWithValue() {
+		return visibleWithValue;
+	}
+	public void setVisibleWithValue(boolean visibleWithValue) {
+		this.visibleWithValue = visibleWithValue;
+	}
 	public void addEnvironment(String key, String line) {
 		if(key!=null && line!=null){
 			if(environments==null){
@@ -108,6 +120,10 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	public String getDocumenterToEnvironmentFile(String environment, String annotationString,
 			String assignationAnnotationString, boolean addDescription, boolean addExample,
 			boolean addState){
+		
+		if(propertyNotPrintedToEnvironment(environment)){
+			return "";
+		}
 		
 		StringBuffer res = new StringBuffer();
 		
@@ -141,7 +157,7 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 		
 		return res.toString();
 	}
-
+	
 	/** {@inheritDoc} */
 	@Override
 	public String toString() {
@@ -157,6 +173,12 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 				+ (environments != null ? "environments: " + environments : "")
 				+ (defaultValue != null ? "defaultValue: " + defaultValue : "")
 				+ "\n\t[super: " + super.toString() + "]\n}";
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public int compareTo(DocumenterUnit o) {
+		return this.propertyName.compareTo(o.getPropertyName());
 	}
 	
 	/**
@@ -177,9 +199,20 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 		}
 	}
 	
-	/** {@inheritDoc} */
-	@Override
-	public int compareTo(DocumenterUnit o) {
-		return this.propertyName.compareTo(o.getPropertyName());
+	/**
+	 * Determina si una propiedad no debe ser impresa para un determinado entorno de compilación
+	 * @param environment Entorno de compilación
+	 * @return Devuleve true si la propiedad no debe ser escrita en la compilación, en caso
+	 * contrario, devuelve false
+	 */
+	private boolean propertyNotPrintedToEnvironment(String environment) {
+		if(isVisibleWithValue()){
+			if(environments==null){
+				return getDefaultValue()==null;
+			}else{
+				return !environments.containsKey(environment) || environments.get(environment)==null;
+			}
+		}
+		return false;
 	}
 }

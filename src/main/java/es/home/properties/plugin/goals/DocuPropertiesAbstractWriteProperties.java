@@ -21,17 +21,26 @@ public abstract class DocuPropertiesAbstractWriteProperties extends DocuProperti
 	private String writeEnvironment;
 	
 	/**
-	 * Determine what is the 
+	 * Determine what is the number of annotations that be write in the result property
 	 * */
 	@Parameter(alias="write.annotationString", defaultValue="0")
 	private int writeAnnotationString;
 
+	/**
+	 * Determine if the state will be writted in compiled file
+	 */
 	@Parameter(defaultValue="false")
 	private boolean addState;
 	
+	/**
+	 * Determine if the example will be writted in compiled file
+	 */
 	@Parameter(defaultValue="false")
 	private boolean addExample;
 	
+	/**
+	 * Determine if the Description will be writted in compiled file
+	 */
 	@Parameter(defaultValue="true")
 	private boolean addDescription;
 

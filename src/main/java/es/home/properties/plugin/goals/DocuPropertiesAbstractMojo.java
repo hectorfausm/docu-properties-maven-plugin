@@ -97,6 +97,10 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	/** Atributo que indica los valores posibles de una propiedad */
 	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"Values")
 	private String attrvalues;
+	
+	/** Atributo que indica que un elemento es visible sólo si tiene valor */
+	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"VisibleWithValue")
+	private String attrvisiblewithvalue;
 
 	/** Atributo que indica el directorio donde se guardará el recurso final */
 	@Parameter(defaultValue="${project.build.directory}/docu-properties")
@@ -149,6 +153,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			this.configuration.setAttrinit(this.attrinit);
 			this.configuration.setAttrstate(this.attrstate);
 			this.configuration.setAttrvalues(this.attrvalues);
+			this.configuration.setAttrvisiblewithvalue(this.attrvisiblewithvalue);
 			this.configuration.setEnvironments(this.environments);
 			this.configuration.setExtensions(this.extensions);
 			this.configuration.setOutput(this.output);
@@ -235,7 +240,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	protected List<DocumenterUnit> getDocumenterUnitsFromLines(List<String> lines) {
 		getLog().debug("Obteniendo las unidades de documentación");
 		List<DocumenterUnit> units = new ArrayList<DocumenterUnit>();
-		Boolean startAnnotation = false;
+		Boolean startDocumenterUnit = false;
 		DocumenterUnit auxDocumenterUnit = null;
 		DocumenterLineType lastDocumenterLineType = null;
 		for (String line : lines) {
@@ -245,35 +250,39 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 				case INIT:
 					auxDocumenterUnit = setInitValue(auxDocumenterUnit,lastDocumenterLineType);
 					lastDocumenterLineType = DocumenterLineType.INIT;
-					startAnnotation = true;
+					startDocumenterUnit = true;
 					break;
 				case FINISH:
-					auxDocumenterUnit = setFinishValue(startAnnotation,line,auxDocumenterUnit,units,lastDocumenterLineType);
+					auxDocumenterUnit = setFinishValue(startDocumenterUnit,line,auxDocumenterUnit,units,lastDocumenterLineType);
 					lastDocumenterLineType = DocumenterLineType.FINISH;
-					startAnnotation = false;
+					startDocumenterUnit = false;
 					break;
 				case DESCRIPTION:
-					auxDocumenterUnit = setDescriptionValue(startAnnotation,line,auxDocumenterUnit,lastDocumenterLineType);
+					auxDocumenterUnit = setDescriptionValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
 					lastDocumenterLineType = DocumenterLineType.DESCRIPTION;
 					break;
 				case EXAMPLE:
-					setExampleValue(startAnnotation,line,auxDocumenterUnit,lastDocumenterLineType);
+					setExampleValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
 					lastDocumenterLineType = DocumenterLineType.EXAMPLE;
 					break;
 				case STATE:
-					setStateValue(startAnnotation,line,auxDocumenterUnit,lastDocumenterLineType);
+					setStateValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
 					lastDocumenterLineType = DocumenterLineType.STATE;
 					break;
 				case VALUES:
-					setValuesValue(startAnnotation,line,auxDocumenterUnit,lastDocumenterLineType);
+					setValuesValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
 					lastDocumenterLineType = DocumenterLineType.VALUES;
 					break;
 				case ENVIRONMENT_VALUE:
-					setEnvironmentValue(startAnnotation,line,auxDocumenterUnit,lastDocumenterLineType);
+					setEnvironmentValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
 					lastDocumenterLineType = DocumenterLineType.ENVIRONMENT_VALUE;
 					break;
 				case ANYTHING:
-					setAnythingValue(startAnnotation,line,auxDocumenterUnit,lastDocumenterLineType);
+					setAnythingValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
+					break;
+				case VISIBLE_WITH_VALUE:
+					setVisibleWithValue(auxDocumenterUnit);
+					lastDocumenterLineType = DocumenterLineType.VISIBLE_WITH_VALUE;
 					break;
 				default:
 					// DO NOTHING
@@ -281,6 +290,14 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			}
 		}
 		return units;
+	}
+
+	/**
+	 * Permite establecer que la porpiedad será solamente visible si contiene valor
+	 * @param auxDocumenterUnit
+	 */
+	private void setVisibleWithValue(DocumenterUnit auxDocumenterUnit) {
+		auxDocumenterUnit.setVisibleWithValue(true);		
 	}
 
 	/**

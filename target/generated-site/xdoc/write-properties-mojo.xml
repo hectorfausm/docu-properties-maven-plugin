@@ -6,7 +6,7 @@
   <body>
     <section name="docu-properties:write-properties">
       <p><strong>Full name</strong>:</p>
-      <p>es.home.plugins:docu-properties-maven-plugin:1.0.2:write-properties</p>
+      <p>es.home.plugins:docu-properties-maven-plugin:1.0.3:write-properties</p>
       <p><strong>Description</strong>:</p>
       <div>(no description)</div>
       <p><strong>Attributes</strong>:</p>
@@ -98,6 +98,12 @@
             <td>Atributo que indica los valores posibles de una propiedad<br/><strong>Default value is</strong>: <code>@Values</code>.<br/></td>
           </tr>
           <tr>
+            <td><strong><a href="#attrvisiblewithvalue">attrvisiblewithvalue</a></strong></td>
+            <td><code>String</code></td>
+            <td><code>-</code></td>
+            <td>Atributo que indica que un elemento es visible sólo si tiene valor<br/><strong>Default value is</strong>: <code>@VisibleWithValue</code>.<br/></td>
+          </tr>
+          <tr>
             <td><strong><a href="#environments">environments</a></strong></td>
             <td><code>String[]</code></td>
             <td><code>-</code></td>
@@ -129,17 +135,16 @@ final<br/><strong>Default value is</strong>: <code>${project.build.directory}/do
             <td><strong><a href="#readCharsets">readCharsets</a></strong></td>
             <td><code>String[]</code></td>
             <td><code>-</code></td>
-            <td>Atributo que determina el conjunto de charset por defecto para la
-lectura de los ficheros de propiedades. La opción por defecto es
-{"UTF-8","ISO-8859-1","UTF-16"}. Las opciones más comunes
-utilizadas son: US-ASCII Seven-bit ASCII, a.k.a. ISO646-US, a.k.a.
-the Basic Latin block of the Unicode character set ISO-8859-1 ISO
-Latin Alphabet No. 1, a.k.a. ISO-LATIN-1 UTF-8 Eight-bit UCS
-Transformation Format UTF-16BE Sixteen-bit UCS Transformation
-Format, big-endian byte order UTF-16LE Sixteen-bit UCS
-Transformation Format, little-endian byte order UTF-16 Sixteen-bit
-UCS Transformation Format, byte order identified by an optional
-byte-order mark<br/></td>
+            <td><pre>
+Atributo que determina el conjunto de charset por defecto para la lectura de los ficheros de propiedades. La opción 
+por defecto es {"UTF-8","ISO-8859-1","UTF-16"}. Las opciones más comunes utilizadas son:
+                US-ASCII        Seven-bit ASCII, a.k.a. ISO646-US, a.k.a. the Basic Latin block of the Unicode character set
+        ISO-8859-1  ISO Latin Alphabet No. 1, a.k.a. ISO-LATIN-1
+        UTF-8           Eight-bit UCS Transformation Format
+        UTF-16BE        Sixteen-bit UCS Transformation Format, big-endian byte order
+        UTF-16LE        Sixteen-bit UCS Transformation Format, little-endian byte order
+        UTF-16          Sixteen-bit UCS Transformation Format, byte order identified by an optional byte-order mark
+</pre><br/></td>
           </tr>
           <tr>
             <td><strong><a href="#type">type</a></strong></td>
@@ -163,16 +168,16 @@ documentación de las propiedades. Los posibles valores son:
             <td><strong><a href="#writeCharset">writeCharset</a></strong></td>
             <td><code>String</code></td>
             <td><code>-</code></td>
-            <td>Atributo que determina el charset por defecto para la escritura de
-los ficheros de propiedades. La opción por defecto es UTF-8. Las
-opciones más comunes utilizadas son: US-ASCII Seven-bit ASCII,
-a.k.a. ISO646-US, a.k.a. the Basic Latin block of the Unicode
-character set ISO-8859-1 ISO Latin Alphabet No. 1, a.k.a.
-ISO-LATIN-1 UTF-8 Eight-bit UCS Transformation Format UTF-16BE
-Sixteen-bit UCS Transformation Format, big-endian byte order
-UTF-16LE Sixteen-bit UCS Transformation Format, little-endian byte
-order UTF-16 Sixteen-bit UCS Transformation Format, byte order
-identified by an optional byte-order mark<br/><strong>Default value is</strong>: <code>UTF-8</code>.<br/></td>
+            <td><pre>
+        Atributo que determina el charset por defecto para la escritura de los ficheros de propiedades. La opción 
+        por defecto es UTF-8. Las opciones más comunes utilizadas son:
+                US-ASCII        Seven-bit ASCII, a.k.a. ISO646-US, a.k.a. the Basic Latin block of the Unicode character set
+        ISO-8859-1  ISO Latin Alphabet No. 1, a.k.a. ISO-LATIN-1
+        UTF-8           Eight-bit UCS Transformation Format
+        UTF-16BE        Sixteen-bit UCS Transformation Format, big-endian byte order
+        UTF-16LE        Sixteen-bit UCS Transformation Format, little-endian byte order
+        UTF-16          Sixteen-bit UCS Transformation Format, byte order identified by an optional byte-order mark
+</pre><br/><strong>Default value is</strong>: <code>UTF-8</code>.<br/></td>
           </tr>
         </table>
       </subsection>
@@ -237,6 +242,12 @@ identified by an optional byte-order mark<br/><strong>Default value is</strong>:
           <li><strong>Type</strong>: <code>java.lang.String</code></li>
           <li><strong>Required</strong>: <code>No</code></li>
           <li><strong>Default</strong>: <code>@Values</code></li>
+        </ul><hr/><p><strong><a name="attrvisiblewithvalue">attrvisiblewithvalue</a>:</strong></p>
+        <div>Atributo que indica que un elemento es visible sólo si tiene valor</div>
+        <ul>
+          <li><strong>Type</strong>: <code>java.lang.String</code></li>
+          <li><strong>Required</strong>: <code>No</code></li>
+          <li><strong>Default</strong>: <code>@VisibleWithValue</code></li>
         </ul><hr/><p><strong><a name="environments">environments</a>:</strong></p>
         <div>Entornos de desarrollo a documentar. Cada uno de los entornos
 especificados se comportarán como un elemento más de las
@@ -264,17 +275,16 @@ final</div>
           <li><strong>Required</strong>: <code>No</code></li>
           <li><strong>Default</strong>: <code>${project.build.directory}/docu-properties</code></li>
         </ul><hr/><p><strong><a name="readCharsets">readCharsets</a>:</strong></p>
-        <div>Atributo que determina el conjunto de charset por defecto para la
-lectura de los ficheros de propiedades. La opción por defecto es
-{"UTF-8","ISO-8859-1","UTF-16"}. Las opciones más comunes
-utilizadas son: US-ASCII Seven-bit ASCII, a.k.a. ISO646-US, a.k.a.
-the Basic Latin block of the Unicode character set ISO-8859-1 ISO
-Latin Alphabet No. 1, a.k.a. ISO-LATIN-1 UTF-8 Eight-bit UCS
-Transformation Format UTF-16BE Sixteen-bit UCS Transformation
-Format, big-endian byte order UTF-16LE Sixteen-bit UCS
-Transformation Format, little-endian byte order UTF-16 Sixteen-bit
-UCS Transformation Format, byte order identified by an optional
-byte-order mark</div>
+        <div><pre>
+Atributo que determina el conjunto de charset por defecto para la lectura de los ficheros de propiedades. La opción 
+por defecto es {"UTF-8","ISO-8859-1","UTF-16"}. Las opciones más comunes utilizadas son:
+                US-ASCII        Seven-bit ASCII, a.k.a. ISO646-US, a.k.a. the Basic Latin block of the Unicode character set
+        ISO-8859-1  ISO Latin Alphabet No. 1, a.k.a. ISO-LATIN-1
+        UTF-8           Eight-bit UCS Transformation Format
+        UTF-16BE        Sixteen-bit UCS Transformation Format, big-endian byte order
+        UTF-16LE        Sixteen-bit UCS Transformation Format, little-endian byte order
+        UTF-16          Sixteen-bit UCS Transformation Format, byte order identified by an optional byte-order mark
+</pre></div>
         <ul>
           <li><strong>Type</strong>: <code>java.lang.String[]</code></li>
           <li><strong>Required</strong>: <code>No</code></li>
@@ -297,16 +307,16 @@ documentación de las propiedades. Los posibles valores son:
           <li><strong>Required</strong>: <code>No</code></li>
           <li><strong>Default</strong>: <code>0</code></li>
         </ul><hr/><p><strong><a name="writeCharset">writeCharset</a>:</strong></p>
-        <div>Atributo que determina el charset por defecto para la escritura de
-los ficheros de propiedades. La opción por defecto es UTF-8. Las
-opciones más comunes utilizadas son: US-ASCII Seven-bit ASCII,
-a.k.a. ISO646-US, a.k.a. the Basic Latin block of the Unicode
-character set ISO-8859-1 ISO Latin Alphabet No. 1, a.k.a.
-ISO-LATIN-1 UTF-8 Eight-bit UCS Transformation Format UTF-16BE
-Sixteen-bit UCS Transformation Format, big-endian byte order
-UTF-16LE Sixteen-bit UCS Transformation Format, little-endian byte
-order UTF-16 Sixteen-bit UCS Transformation Format, byte order
-identified by an optional byte-order mark</div>
+        <div><pre>
+        Atributo que determina el charset por defecto para la escritura de los ficheros de propiedades. La opción 
+        por defecto es UTF-8. Las opciones más comunes utilizadas son:
+                US-ASCII        Seven-bit ASCII, a.k.a. ISO646-US, a.k.a. the Basic Latin block of the Unicode character set
+        ISO-8859-1  ISO Latin Alphabet No. 1, a.k.a. ISO-LATIN-1
+        UTF-8           Eight-bit UCS Transformation Format
+        UTF-16BE        Sixteen-bit UCS Transformation Format, big-endian byte order
+        UTF-16LE        Sixteen-bit UCS Transformation Format, little-endian byte order
+        UTF-16          Sixteen-bit UCS Transformation Format, byte order identified by an optional byte-order mark
+</pre></div>
         <ul>
           <li><strong>Type</strong>: <code>java.lang.String</code></li>
           <li><strong>Required</strong>: <code>No</code></li>

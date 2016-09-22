@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.model.Resource;
 
 import es.home.properties.exception.SiaPluginDocumentationException;
@@ -21,24 +20,18 @@ import es.home.properties.model.DocumenterUnit;
 @Mojo(name="docu-properties", requiresProject=true)
 public class DocuPropertiesMojo extends DocuPropertiesAbstractMojo
 {
-	
-	/** Atributo que permite consultar los directorios por defecto de recursos de maven */
-	@Parameter(defaultValue="true")
-	private boolean includeResourcesFolders;
 
 	/** {@inheritDoc} */
 	@Override
 	public void execute() throws MojoExecutionException{
 		
 		try{
-			// Se establece la configuración propia del Goal
-			getConfiguration().setIncludeResourcesFolders(includeResourcesFolders);
 			
 			if(getDocumenter()!=null){
 				List<Resource> resources = getDocumenter().getConfiguration().getProject().getResources();
 				
 				// Leyendo los recursos por defecto
-				if(resources!=null && includeResourcesFolders){
+				if(resources!=null ){
 					getLog().info("Recorriendo los recursos del proyecto");
 					for (Resource resource:resources) {
 						String resourcePath = resource.getDirectory();

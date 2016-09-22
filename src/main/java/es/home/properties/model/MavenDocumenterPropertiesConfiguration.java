@@ -50,6 +50,9 @@ public class MavenDocumenterPropertiesConfiguration {
 	
 	/** Atributo que indica el patrón soportado por una propiedad */
 	private String possibleValues;
+	
+	/** Atributo que determina si una propiedad será visible solo si tiene valor */
+	private String attrvisiblewithvalue;
 
 	/** Atributo que indica los valores posibles de una propiedad */
 	private String attrvalues;
@@ -117,6 +120,8 @@ public class MavenDocumenterPropertiesConfiguration {
 					res = DocumenterLineType.STATE;
 				}else if(isEnvironmentValue(lineCopy)){
 					res = DocumenterLineType.ENVIRONMENT_VALUE;
+				}else if(lineCopy.startsWith(attrvisiblewithvalue)){
+					res = DocumenterLineType.VISIBLE_WITH_VALUE;
 				}
 			}else{
 				res = DocumenterLineType.ANYTHING;
@@ -311,6 +316,12 @@ public class MavenDocumenterPropertiesConfiguration {
 
 	public void setAttrvalues(String attrvalues) {
 		this.attrvalues = attrvalues;
+	}
+	public void setAttrvisiblewithvalue(String attrvisiblewithvalue) {
+		this.attrvisiblewithvalue = attrvisiblewithvalue;
+	}
+	public String getAttrvisiblewithvalue() {
+		return attrvisiblewithvalue;
 	}
 
 	public void setOutput(String output) {
