@@ -22,6 +22,7 @@ import es.home.properties.model.DocumenterLineType;
 import es.home.properties.model.DocumenterType;
 import es.home.properties.model.DocumenterUnit;
 import es.home.properties.model.MavenDocumenterPropertiesConfiguration;
+import es.home.properties.model.Variable;
 import es.home.properties.plugin.factories.DocumenterFactory;
 import es.home.properties.plugin.interfaces.documenter.MavenPropertiesDocumenter;
 import es.home.properties.plugin.utils.ListFiles;
@@ -51,6 +52,21 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	 * */
 	@Parameter
 	private String[] environments;
+	
+	/**
+	 * Entornos de desarrollo a documentar. Cada uno de los entornos especificados se comportarán como un elemento más de las propiedades
+	 * <pre>
+	 * 		&lt;variables&gt;
+	 * 			&lt;variable&gt;
+	 * 				&lt;key&gt;THE_KEY&lt;/key&gt;
+	 * 				&lt;value&gt;VALUE&lt;/value&gt;
+	 * 			&lt;/variable&gt;
+	 *			...
+	 * 		&lt;/variables&gt;
+	 * </pre> 
+	 * */
+	@Parameter
+	private Variable[] variables;
 	
 	
 	/** Atributo que indica el nombre del fichero donde se guardará la documentación de las propiedades.
@@ -167,6 +183,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			this.configuration.setLogger(getLog());
 			this.configuration.setWriteCharset(this.writeCharset);
 			this.configuration.setReadCharsets(this.readCharsets);
+			this.configuration.setVariables(this.variables);
 		}
 		return this.configuration;
 	}

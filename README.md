@@ -46,13 +46,13 @@ Todas estas anotaciones son opcionales y configurables. A continuación se muest
 - **VisibleWithValue:** Permite que las propiedades con esta anotación sólamente sean visibles si tienen un valor asociado. En caso cotrario, las propiedades con esta anotación, no serán visualizadas.
 - **Cualquier Otro valor:** Cualquier otra palabra precedida del caracter de anotación, se entiende como el valor asociado a un determinado entorno de compilación
 
-Ejemplo para una ejecución de ``ENTORNO_A``:
+Ejemplo para una ejecución de ``ENTORNO_A`` con la configuración de plugin de la (tabla 1):
 ```docu-properties
 # @Documented
 # @Description Descripción de la propiedad
 # @State (OBLIGATORIO)
 # @VisibleWithValue
-# @ENTORNO_A valueA
+# @ENTORNO_A Hello ${TEST_KEY}
 # @ENTORNO_B valueB
 my.property.a=
 
@@ -67,11 +67,11 @@ Resultado:
 ```docu-properties
 # Descripción de la propiedad
 # Estado (OBLIGATORIO)
-my.property.a=valueA
+my.property.a=Hello Wolrd
 ```
 
 ## Configuración del plugin
-Como cualaquier plugin maven, requiere de una configuración a nivel del POM del proyecto. A continuación se muestra un ejemplo de configuración para el mojo: ``docu-properties-input-write``
+Como cualaquier plugin maven, requiere de una configuración a nivel del POM del proyecto. A continuación se muestra un ejemplo de configuración para el mojo: ``docu-properties-input-write`` (tabla 1)
 ```xml
 <plugin>
 	<groupId>es.home.plugins</groupId>
@@ -100,6 +100,12 @@ Como cualaquier plugin maven, requiere de una configuración a nivel del POM del
 			<read.charset>ISO-8859-1</read.charset>
 		</read.charsets>
 		<output>${install.path}/conf</output>
+		<variables>
+			<variable>
+				<key>TEST_KEY</key>
+				<value>World</value>
+			</variables>
+		</variables>
 	</configuration>
 </plugin>
 ```
@@ -122,6 +128,7 @@ output | String	| Atributo que indica el directorio donde se guardará el recurs
 read.charsets | String[] | Atributo que determina el conjunto de charset por defecto para la lectura de los ficheros de propiedades. | ["UTF-8","ISO-8859-1","UTF-16"]  
 type | DocumenterType |	Atributo que indica el nombre del fichero donde se guardará la documentación de las propiedades. Los posibles valores son: EXCEL,PLAIN,HTML | EXCEL
 write.charset | String | Atributo que determina el charset por defecto para la escritura de los ficheros de propiedades. | UTF-8.
+variables | Variable: key-value | Variables con clave valor que permite sustituir elementos en el fichero de propiedades. las variables se incluyen con ${KEY} y se sustituye por el valor indicado | null
 
 ### docu-properties:docu-properties-input
 
@@ -142,6 +149,7 @@ output | String	| Atributo que indica el directorio donde se guardará el recurs
 read.charsets | String[] | Atributo que determina el conjunto de charset por defecto para la lectura de los ficheros de propiedades. | ["UTF-8","ISO-8859-1","UTF-16"]  
 type | DocumenterType |	Atributo que indica el nombre del fichero donde se guardará la documentación de las propiedades. Los posibles valores son: EXCEL,PLAIN,HTML | EXCEL
 write.charset | String | Atributo que determina el charset por defecto para la escritura de los ficheros de propiedades. | UTF-8.
+variables | Variable: key-value | Variables con clave valor que permite sustituir elementos en el fichero de propiedades. las variables se incluyen con ${KEY} y se sustituye por el valor indicado | null
 
 ### docu-properties:docu-properties-input-write
 
@@ -165,6 +173,7 @@ output | String	| Atributo que indica el directorio donde se guardará el recurs
 read.charsets | String[] | Atributo que determina el conjunto de charset por defecto para la lectura de los ficheros de propiedades. | ["UTF-8","ISO-8859-1","UTF-16"]  
 write.charset | String | Atributo que determina el charset por defecto para la escritura de los ficheros de propiedades. | UTF-8.
 write.environment | String | Entorno para el que será compilado el fichero resultado de propiedades
+variables | Variable: key-value | Variables con clave valor que permite sustituir elementos en el fichero de propiedades. las variables se incluyen con ${KEY} y se sustituye por el valor indicado | null
 
 ### docu-properties:write-properties
 
@@ -187,3 +196,4 @@ output | String	| Atributo que indica el directorio donde se guardará el recurs
 read.charsets | String[] | Atributo que determina el conjunto de charset por defecto para la lectura de los ficheros de propiedades. | ["UTF-8","ISO-8859-1","UTF-16"]  
 write.charset | String | Atributo que determina el charset por defecto para la escritura de los ficheros de propiedades. | UTF-8.
 write.environment | String | Entorno para el que será compilado el fichero resultado de propiedades
+variables | Variable: key-value | Variables con clave valor que permite sustituir elementos en el fichero de propiedades. las variables se incluyen con ${KEY} y se sustituye por el valor indicado | null

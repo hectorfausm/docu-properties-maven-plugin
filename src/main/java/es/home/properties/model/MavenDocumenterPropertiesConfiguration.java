@@ -78,6 +78,9 @@ public class MavenDocumenterPropertiesConfiguration {
 	/** Atributo que indica que un bloque de comentarios es un comentario simple */
 	private String attrsimplecomment;
 	
+	/** Variables para transofrmar propiedades */
+	private Variable[] variables;
+	
 	/** Logger */
 	private Log logger;
 	
@@ -105,8 +108,9 @@ public class MavenDocumenterPropertiesConfiguration {
 	 * */
 	public DocumenterLineType getLineType(String line) {
 		DocumenterLineType res = DocumenterLineType.ANYTHING;
+		String auxLine = line.trim();
 		// Si la línea no es un comentario y la línea es un retorno de carro o otro carácter imprimible, se trata de un final
-		if(!isLineAnnotation(line) && ((!line.isEmpty() && CharUtils.isAsciiPrintable(line.charAt(0))) || line.isEmpty())){
+		if(!isLineAnnotation(auxLine) && ((!auxLine.isEmpty() && CharUtils.isAsciiPrintable(line.charAt(0))) || line.isEmpty())){
 			return DocumenterLineType.FINISH;
 			
 		// Si la línea es un comentario
@@ -375,6 +379,14 @@ public class MavenDocumenterPropertiesConfiguration {
 	
 	public String getAttrsimplecomment() {
 		return attrsimplecomment;
+	}
+	
+	public Variable[] getVariables() {
+		return variables;
+	}
+	
+	public void setVariables(Variable[] variables) {
+		this.variables = variables;
 	}
 
 	/**
