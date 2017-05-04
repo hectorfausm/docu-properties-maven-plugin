@@ -46,7 +46,9 @@ public enum PluginDocumentationExceptionCode {
 	/** Al procesar un file */
 	ON_PROCESS_MOJO_FILE(110,Prefix.MOJO),
 	/** Desconocido al procesar un file */
-	ON_PROCESS_MOJO_FILE_UNKNOWN(111,Prefix.MOJO);
+	ON_PROCESS_MOJO_FILE_UNKNOWN(111,Prefix.MOJO),
+	/** En la validación de las propiedades */
+	VALIDATION(112,Prefix.MOJO);
 	
 	/**
 	 * Número interno de la excepción

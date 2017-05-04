@@ -45,6 +45,8 @@ Todas estas anotaciones son opcionales y configurables. A continuación se muest
 - **Example:** Permite añadir un ejemplo de valor a la propiedad. 
 - **VisibleWithValue:** Permite que las propiedades con esta anotación sólamente sean visibles si tienen un valor asociado. En caso cotrario, las propiedades con esta anotación, no serán visualizadas.
 - **Cualquier Otro valor:** Cualquier otra palabra precedida del caracter de anotación, se entiende como el valor asociado a un determinado entorno de compilación
+- **Pattern:** Permite asignar un patrón de validación a las propieades. En caso de que un valro final de propiedad no cumpla el patrón. Se generará un error en el log de maven
+- **@:** permite añadir valor por defecto para aquellas ejecuciones que cumplan el patrón mostrado a continuación de este elemento
 
 Ejemplo para una ejecución de ``ENTORNO_A`` con la configuración de plugin de la (tabla 1):
 ```docu-properties
@@ -58,16 +60,27 @@ my.property.a=
 
 # @Documented
 # @Description Descripción de la propiedad
-# @State Estado (OBLIGATORIO)
+# @State Estado (OPCIONAL)
 # @VisibleWithValue
 # @ENTORNO_B valueB
 my.property.b=
+
+# @Documented
+# @Description Descripción de la propiedad
+# @State Estado (OBLIGATORIO)
+# @@ENTORNO_.* valueC1
+# @ENTORNO_B valueC2
+my.property.c=
 ```
 Resultado:
 ```docu-properties
 # Descripción de la propiedad
 # Estado (OBLIGATORIO)
 my.property.a=Hello Wolrd
+
+# Descripción de la propiedad
+# Estado (OBLIGATORIO)
+my.property.c=valueC
 ```
 
 ## Configuración del plugin

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>es.home.plugins</groupId>
 	<artifactId>docu-properties-maven-plugin</artifactId>
-	<version>1.0.5-SNAPSHOT</version>
+	<version>1.0.5</version>
 	<packaging>maven-plugin</packaging>
 	<name>docuProperties</name>
 	<description>It can Document the properties files from your aplications</description>

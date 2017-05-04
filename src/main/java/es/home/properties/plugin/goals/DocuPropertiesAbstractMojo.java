@@ -109,6 +109,18 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	/** Atributo que indica el estado de una propiedad */
 	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"State")
 	private String attrstate;
+	
+	/** Atributo que indica el estado de obligatoriedad de una propiedad */
+	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"Mandatory")
+	private String attrmandatory;
+	
+	/** Atributo que indica el patrón soportado por una propiedad */
+	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"Pattern")
+	private String attrpattern;
+	
+	/** Atributo que indica lso valores soportados por una propiedad */
+	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"PossibleValues")
+	private String possibleValues;
 
 	/** Atributo que indica un ejemplo de una propiedad */
 	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"Example")
@@ -141,7 +153,6 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	@Parameter(defaultValue="UTF-8", alias="write.charset")
 	private String writeCharset;
 	
-	
 	/** 
 	 * <pre>
 	 * Atributo que determina el conjunto de charset por defecto para la lectura de los ficheros de propiedades. La opción 
@@ -156,6 +167,12 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	 * */
 	@Parameter(alias="read.charsets")
 	private String[] readCharsets = new String[]{"UTF-8","ISO-8859-1","UTF-16"};
+	
+	/** 
+	 * Permite ejecutar las validaciones de las propiedades
+	 * */
+	@Parameter(defaultValue="false")
+	private boolean validate;
 	
 	/**
 	 * Obtiene el objeto de configuración
@@ -174,6 +191,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			this.configuration.setAttrinit(this.attrinit);
 			this.configuration.setAttrstate(this.attrstate);
 			this.configuration.setAttrvalues(this.attrvalues);
+			this.configuration.setAttrpattern(this.attrpattern);
 			this.configuration.setAttrvisiblewithvalue(this.attrvisiblewithvalue);
 			this.configuration.setEnvironments(this.environments);
 			this.configuration.setExtensions(this.extensions);
@@ -184,6 +202,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			this.configuration.setWriteCharset(this.writeCharset);
 			this.configuration.setReadCharsets(this.readCharsets);
 			this.configuration.setVariables(this.variables);
+			this.configuration.setValidate(this.validate);
 		}
 		return this.configuration;
 	}
@@ -253,7 +272,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	}
 
 	/**
-	 * Método que permite obtener las unidades de documentación a partir de la líneas de un fichero
+	 * Permite obtener las unidades de documentación a partir de la líneas de un fichero
 	 * de propiedades
 	 * @param lines Líneas del fichero de propiedades a analizar
 	 * @return Devuelve una lista de {@link DocumenterUnit} con la infomrmación de documentación
@@ -287,6 +306,10 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 					setExampleValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
 					lastDocumenterLineType = DocumenterLineType.EXAMPLE;
 					break;
+				case PATTERN:
+					setPatternValue(startDocumenterUnit,line,auxDocumenterUnit);
+					lastDocumenterLineType = DocumenterLineType.PATTERN;
+					break;
 				case STATE:
 					setStateValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
 					lastDocumenterLineType = DocumenterLineType.STATE;
@@ -298,6 +321,10 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 				case ENVIRONMENT_VALUE:
 					setEnvironmentValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
 					lastDocumenterLineType = DocumenterLineType.ENVIRONMENT_VALUE;
+					break;
+				case SPECIAL_DEFAULT_ENVIRONMENT:
+					setSpecialDefaultEnvironmentValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
+					lastDocumenterLineType = DocumenterLineType.SPECIAL_DEFAULT_ENVIRONMENT;
 					break;
 				case ANYTHING:
 					setAnythingValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
@@ -317,6 +344,23 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			}
 		}
 		return units;
+	}
+
+	private void setSpecialDefaultEnvironmentValue(Boolean startAnnotation,
+			String line, DocumenterUnit auxDocumenterUnit,
+			DocumenterLineType lastDocumenterLineType) {
+		if(startAnnotation){
+			String key = getDocumenter().getConfiguration().getSpecialDefaultEnvironmentFromLine(line);
+			String value = getDocumenter().getConfiguration().getValueFromLine(line, DocumenterLineType.SPECIAL_DEFAULT_ENVIRONMENT);
+			getLog().debug("Obteniendo una variable de entorno especial: key -> "+((key==null)?"null":key)+" - value-> "+((value==null)?"null":value));
+			if(key!=null && value!=null){
+				auxDocumenterUnit.addSpecialDefaultEnvironment(
+					key,
+					value,
+					getConfiguration().getVariables()
+				);
+			}
+		}
 	}
 
 	/**
@@ -347,22 +391,22 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 						description="";
 					}
 					description+="\n"+getConfiguration().getLineWithoutAnnotation(line);
-					auxDocumenterUnit.setDescription(description);
+					auxDocumenterUnit.setDescription(description, getConfiguration().getVariables());
 					break;
 				case EXAMPLE:
 					String example = auxDocumenterUnit.getExample();
 					example+="\n"+getConfiguration().getLineWithoutAnnotation(line);
-					auxDocumenterUnit.setExample(example);
+					auxDocumenterUnit.setExample(example, getConfiguration().getVariables());
 					break;
 				case STATE:
 					String sate = auxDocumenterUnit.getState();
 					sate+="\n"+getConfiguration().getLineWithoutAnnotation(line);
-					auxDocumenterUnit.setState(sate);
+					auxDocumenterUnit.setState(sate,getConfiguration().getVariables());
 					break;
 				case VALUES:
 					String values = auxDocumenterUnit.getValues();
 					values+="\n"+getConfiguration().getLineWithoutAnnotation(line);
-					auxDocumenterUnit.setValues(values);
+					auxDocumenterUnit.setValues(values, getConfiguration().getVariables());
 					break;
 				default:
 					// DO NOTHING
@@ -384,7 +428,8 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			if(key!=null && value!=null){
 				auxDocumenterUnit.addEnvironment(
 					getConfiguration().getEnvironmentFromLine(line),
-					getConfiguration().getValueFromLine(line, DocumenterLineType.ENVIRONMENT_VALUE)
+					getConfiguration().getValueFromLine(line, DocumenterLineType.ENVIRONMENT_VALUE),
+					getConfiguration().getVariables()
 				);
 			}
 		}
@@ -397,9 +442,10 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			DocumenterUnit auxDocumenterUnit,
 			DocumenterLineType lastDocumenterLineType) {
 		if(startAnnotation){
-			getLog().debug("Obteniendo los valores de la unida de documentación");
+			getLog().debug("Obteniendo los valores de la unidad de documentación");
 			auxDocumenterUnit.setValues(
-				getConfiguration().getValueFromLine(line,DocumenterLineType.VALUES)
+				getConfiguration().getValueFromLine(line,DocumenterLineType.VALUES),
+				getConfiguration().getVariables()
 			);
 		}
 	}
@@ -413,7 +459,8 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		if(startAnnotation){
 			getLog().debug("Obteniendo el estado de la unida de documentación");
 			auxDocumenterUnit.setState(
-				getConfiguration().getValueFromLine(line,DocumenterLineType.STATE)
+				getConfiguration().getValueFromLine(line,DocumenterLineType.STATE),
+				getConfiguration().getVariables()
 			);
 		}
 	}
@@ -425,9 +472,24 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			DocumenterUnit auxDocumenterUnit,
 			DocumenterLineType lastDocumenterLineType) {
 		if(startAnnotation){
-			getLog().debug("Obteniendo la le ejemplo de la unidad de documentación");
+			getLog().debug("Obteniendo la llinea ejemplo de la unidad de documentación");
 			auxDocumenterUnit.setExample(
-				getConfiguration().getValueFromLine(line,DocumenterLineType.EXAMPLE)
+				getConfiguration().getValueFromLine(line,DocumenterLineType.EXAMPLE),
+				getConfiguration().getVariables()
+			);
+		}
+	}
+	
+	/**
+	 * Establece la propiedad patrón para la unidad de documentación
+	 * */
+	private void setPatternValue(Boolean startAnnotation, String line,
+			DocumenterUnit auxDocumenterUnit) {
+		if(startAnnotation){
+			getLog().debug("Obteniendo el patrón de la unidad de documentación");
+			auxDocumenterUnit.setPattern(
+				getConfiguration().getValueFromLine(line,DocumenterLineType.PATTERN),
+				getConfiguration().getVariables()
 			);
 		}
 	}
@@ -442,7 +504,8 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		if(startAnnotation){
 			getLog().debug("Obteniendo la descripción de la unidad de documentación");
 			auxDocumenterUnit.setDescription(
-				getConfiguration().getValueFromLine(line,DocumenterLineType.DESCRIPTION)
+				getConfiguration().getValueFromLine(line,DocumenterLineType.DESCRIPTION),
+				getConfiguration().getVariables()
 			);
 		}
 		return auxDocumenterUnit;
@@ -462,8 +525,8 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			if(indexOf>=0){
 				String propertyName = lineThis.substring(0,indexOf);
 				String defaultValue = lineThis.substring(indexOf+1,lineThis.length());
-				auxDocumenterUnit.setPropertyName(propertyName);
-				auxDocumenterUnit.setDefaultValue(defaultValue);
+				auxDocumenterUnit.setPropertyName(propertyName, getConfiguration().getVariables());
+				auxDocumenterUnit.setDefaultValue(defaultValue, getConfiguration().getVariables());
 			}
 			units.add(auxDocumenterUnit);
 		}
@@ -476,7 +539,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	 * */
 	private DocumenterUnit setInitValue(DocumenterUnit auxDocumenterUnit, DocumenterLineType lastDocumenterLineType) {
 		getLog().debug("Iniciando una unidad de documentación");
-		auxDocumenterUnit = new DocumenterUnit();
+		auxDocumenterUnit = new DocumenterUnit(getLog());
 		return auxDocumenterUnit;
 	}
 	

@@ -48,7 +48,7 @@ public class MavenDocumenterPropertiesConfiguration {
 	/** Atributo que indica el patrón soportado por una propiedad */
 	private String attrpattern;
 	
-	/** Atributo que indica el patrón soportado por una propiedad */
+	/** Atributo que indica lso valores soportados por una propiedad */
 	private String possibleValues;
 	
 	/** Atributo que determina si una propiedad será visible solo si tiene valor */
@@ -80,6 +80,9 @@ public class MavenDocumenterPropertiesConfiguration {
 	
 	/** Variables para transofrmar propiedades */
 	private Variable[] variables;
+	
+	/** Permite ejecutar las validaciones de las propiedades */
+	private boolean validate;
 	
 	/** Logger */
 	private Log logger;
@@ -121,7 +124,11 @@ public class MavenDocumenterPropertiesConfiguration {
 			if(firstAnnotationIn>0){
 				String lineCopy = line.substring(firstAnnotationIn); 
 				logger.debug("Obteniendo el tipo de la línea a partir de la subcadena: \""+lineCopy+"\"");
-				if(lineCopy.startsWith(attrinit)){
+				
+				// Si la línea es un entrono especial para asiognar valores por defecto
+				if(lineCopy.startsWith(ANNOTATION_DEFINED_STRING+ANNOTATION_DEFINED_STRING)){
+					res = DocumenterLineType.SPECIAL_DEFAULT_ENVIRONMENT;
+				}else if(lineCopy.startsWith(attrinit)){
 					res = DocumenterLineType.INIT;
 				}else if(lineCopy.startsWith(attrdescription)){
 					res = DocumenterLineType.DESCRIPTION;
@@ -137,6 +144,8 @@ public class MavenDocumenterPropertiesConfiguration {
 					res = DocumenterLineType.VISIBLE_WITH_VALUE;
 				}else if(lineCopy.startsWith(attrsimplecomment)){
 					res = DocumenterLineType.INIT_SIMPLE_COMMENT;
+				}else if(lineCopy.startsWith(attrpattern)){
+					res = DocumenterLineType.PATTERN;
 				}
 				
 			// Si no, es cualquier cosa imprimible
@@ -178,6 +187,12 @@ public class MavenDocumenterPropertiesConfiguration {
 					indexOf++;
 				}
 				break;
+			case PATTERN:
+				indexOf = line.indexOf(attrpattern)+attrpattern.length();
+				if(indexOf>=0){
+					indexOf++;
+				}
+				break;
 			case EXAMPLE:
 				indexOf = line.indexOf(attrexample)+attrexample.length();
 				if(indexOf>=0){
@@ -201,6 +216,9 @@ public class MavenDocumenterPropertiesConfiguration {
 			case ENVIRONMENT_VALUE:
 				indexOf = getEnvironmentIndexOf(line);
 				break;
+			case SPECIAL_DEFAULT_ENVIRONMENT:
+				indexOf = getSpecialDEfaultEnvironmentIndexOf(line);
+				break;
 			default:
 				break;
 		}
@@ -212,6 +230,16 @@ public class MavenDocumenterPropertiesConfiguration {
 		}
 	}
 	
+	/**
+	 * Obtiene la posición a partir de la cual comeinza el valor asignado a un perfil especial por defecto
+	 * @param line
+	 * @return
+	 */
+	private int getSpecialDEfaultEnvironmentIndexOf(String line) {
+		String key = getSpecialDefaultEnvironmentFromLine(line);
+		return line.indexOf(key)+1+key.length();
+	}
+
 	/**
 	 * Permite obtener una línea sin la anotación
 	 * @param line Línea a transformar
@@ -227,94 +255,73 @@ public class MavenDocumenterPropertiesConfiguration {
 		return res;
 	}
 
-	// ACCEDENTES
+	// METODOS DE ACCESO
 	public MavenProject getProject() {
 		return project;
 	}
-
 	public String[] getEnvironments() {
 		return environments;
 	}
-
 	public String[] getExtensions() {
 		if(extensions==null || extensions.length<=0){
 			extensions = new String[]{DEFAULT_PROPERTIES_EXTENSION};
 		}
 		return extensions;
 	}
-
 	public String getAttrinit() {
 		return attrinit;
 	}
-
 	public String getAttrdescription() {
 		return attrdescription;
 	}
-
 	public String getAttrstate() {
 		return attrstate;
 	}
-
 	public String getAttrexample() {
 		return attrexample;
 	}
-	
 	public String[] getAnnotationString() {
 		return annotationString;
 	}
-
 	public String getAttrvalues() {
 		return attrvalues;
 	}
-
 	public String getOutput() {
 		return output;
 	}
-	
 	public DocumenterType getType() {
 		return type;
 	}
-
 	public void setProject(MavenProject project) {
 		this.project = project;
 	}
-
 	public void setEnvironments(String[] environments) {
 		this.environments = environments;
 	}
-
 	public void setExtensions(String[] extensions) {
 		this.extensions = extensions;
 	}
-
 	public void setAnnotationString(String[] annotationString) {
 		this.annotationString = annotationString;
 	}
-
 	public void setAsignationAnnotationString(String asignationAnnotationString) {
 		this.asignationAnnotationString = asignationAnnotationString;
 	}
-
 	public String getAsignationAnnotationString() {
 		return asignationAnnotationString;
 	}
-	
 	public void setAttrinit(String attrinit) {
 		this.attrinit = attrinit;
 	}
-
 	public void setAttrdescription(String attrdescription) {
 		this.attrdescription = attrdescription;
 	}
-
 	public void setAttrstate(String attrstate) {
 		this.attrstate = attrstate;
 	}
-
 	public void setAttrexample(String attrexample) {
 		this.attrexample = attrexample;
 	}
-
 	public void setAttrvalues(String attrvalues) {
 		this.attrvalues = attrvalues;
 	}
@@ -324,71 +331,67 @@ public class MavenDocumenterPropertiesConfiguration {
 	public String getAttrvisiblewithvalue() {
 		return attrvisiblewithvalue;
 	}
-
 	public void setOutput(String output) {
 		this.output = output;
 	}
-
 	public void setType(DocumenterType type) {
 		this.type = type;
 	}
-	
 	public void setLogger(Log logger) {
 		this.logger = logger;
 	}
-	
 	public String[] getInputs() {
 		return inputs;
 	}
-	
 	public void setInputs(String[] inputs) {
 		this.inputs = inputs;
 	}
-	
 	public boolean isIncludeResourcesFolders() {
 		return includeResourcesFolders;
 	}
-	
 	public void setIncludeResourcesFolders(boolean includeResourcesFolders) {
 		this.includeResourcesFolders = includeResourcesFolders;
 	}
-	
 	public boolean isDefaultOutput() {
 		return defaultOutput;
 	}
-	
 	public void setDefaultOutput(boolean isDefaultOutput) {
 		this.defaultOutput = isDefaultOutput;
 	}
-	
 	public String getCharset() {
 		return charset;
 	}
-	
 	public void setWriteCharset(String charset) {
 		this.charset = charset;
 	}
-
 	public void setReadCharsets(String[] readCharsets) {
 		this.readCharsets = readCharsets;
 	}
-	
 	public String[] getReadCharsets() {
 		return readCharsets;
 	}
-	
 	public String getAttrsimplecomment() {
 		return attrsimplecomment;
 	}
-	
 	public Variable[] getVariables() {
 		return variables;
 	}
-	
 	public void setVariables(Variable[] variables) {
 		this.variables = variables;
 	}
-
+	public boolean isValidate() {
+		return validate;
+	}
+	public void setValidate(boolean validate) {
+		this.validate = validate;
+	}
+	public String getAttrpattern() {
+		return attrpattern;
+	}
+	public void setAttrpattern(String attrpattern) {
+		this.attrpattern = attrpattern;
+	}
+	
 	/**
 	 * Establece un Atributo para Un comentario simple
 	 * @param attrsimplecomment
@@ -429,5 +432,15 @@ public class MavenDocumenterPropertiesConfiguration {
 			}
 		}
 		return false;
+	}
+
+	public String getSpecialDefaultEnvironmentFromLine(String line) {
+		int initIndex = line.indexOf(ANNOTATION_DEFINED_STRING+ANNOTATION_DEFINED_STRING)+2;
+		int spaceIndex = line.substring(initIndex).indexOf(" ")+initIndex;
+		if(initIndex>=0 && spaceIndex>0){
+			return line.substring(initIndex,spaceIndex);
+		}else{
+			return null;
+		}
 	}
 }
