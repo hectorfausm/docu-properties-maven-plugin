@@ -84,8 +84,17 @@ public class MavenDocumenterPropertiesConfiguration {
 	/** Permite ejecutar las validaciones de las propiedades */
 	private boolean validate;
 	
+	/** Entrada de datos única */
+	private String input;
+	
 	/** Logger */
 	private Log logger;
+	
+	/** Ficheros a excluir de la compilación */
+	private String[] excludes;
+	
+	/** Determian si se debe o no mantener la estructura de carpetas en una compilación */
+	private boolean maintainFolderStructure;
 	
 	/**
 	 * Permite identificar si una cadena es una anotación
@@ -98,7 +107,7 @@ public class MavenDocumenterPropertiesConfiguration {
 			}
 		}
 		return false;
-	};
+	}
 	
 	// PROPIEDADES ESTATICAS PRIVADAS
 	private String DEFAULT_PROPERTIES_EXTENSION = "properties";
@@ -391,6 +400,27 @@ public class MavenDocumenterPropertiesConfiguration {
 	public void setAttrpattern(String attrpattern) {
 		this.attrpattern = attrpattern;
 	}
+	public void setExcludes(String[] excludes) {
+		this.excludes = excludes;
+	}
+	public String[] getExcludes() {
+		if(this.excludes==null){
+			this.excludes = new String[]{};
+		}
+		return excludes;
+	}
+	public String getInput() {
+		return input;
+	}
+	public void setInput(String input) {
+		this.input = input;
+	}
+	public boolean isMaintainFolderStructure() {
+		return maintainFolderStructure;
+	}
+	public void setMaintainFolderStructure(boolean maintainFolderStructure) {
+		this.maintainFolderStructure = maintainFolderStructure;
+	}
 	
 	/**
 	 * Establece un Atributo para Un comentario simple
@@ -424,7 +454,7 @@ public class MavenDocumenterPropertiesConfiguration {
 	 * @return Devuelve true si se trata del caso, en caso contrario devuelve false.
 	 * */
 	private boolean isEnvironmentValue(String lineCopy) {
-		if(getEnvironments()!=null){
+		if(getEnvironments()!=null && getEnvironments().length>0){
 			for (String environment : getEnvironments()) {
 				if(lineCopy.startsWith((ANNOTATION_DEFINED_STRING)+environment)){
 					return true;
@@ -437,8 +467,8 @@ public class MavenDocumenterPropertiesConfiguration {
 	public String getSpecialDefaultEnvironmentFromLine(String line) {
 		int initIndex = line.indexOf(ANNOTATION_DEFINED_STRING+ANNOTATION_DEFINED_STRING)+2;
 		int spaceIndex = line.substring(initIndex).indexOf(" ")+initIndex;
-		if(initIndex>=0 && spaceIndex>0){
-			return line.substring(initIndex,spaceIndex);
+		if(initIndex>=0 && spaceIndex>initIndex){
+			return line.substring(initIndex, spaceIndex);
 		}else{
 			return null;
 		}

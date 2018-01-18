@@ -81,7 +81,15 @@ public abstract class DocuPropertiesAbstractWriteProperties extends DocuProperti
 				String result = getText(units);
 				
 				// Se crea el fichero
-				String url = getConfiguration().getOutput()+"/"+file.getFileName();
+				String relativePath = getConfiguration().getOutput();
+				String url;
+				if(getConfiguration().getInput()!=null && getConfiguration().isMaintainFolderStructure()){
+					String absolutePath = file.toFile().getCanonicalPath().replace("\\", "/");
+					relativePath = (relativePath+"/"+absolutePath.replace(getConfiguration().getInput().replace("\\", "/"), "")).replace("//", "/");
+					url = relativePath;
+				}else{
+					url = relativePath+"/"+file.getFileName();
+				}
 				getLog().debug("Creando el fichero: "+url);
 				
 				// Se crea la estructura de carpetas

@@ -5,6 +5,8 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.maven.plugin.logging.Log;
 
@@ -37,13 +39,38 @@ public class ListFiles extends SimpleFileVisitor<Path> {
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
 		try{
 			LOGGER.debug("Procesando el fichero:" + file.toString());
-			mojoPlugin.proccesFile(file);	
+			
+			// Si no se debe excluri el fichero se ejecuta la compilación
+			if(isNoExcluded(file.toFile().getAbsolutePath().toString(), mojoPlugin.getDocumenter().getConfiguration().getExcludes())){
+				mojoPlugin.proccesFile(file);	
+			}
 		}catch(SecurityException se){
 			LOGGER.error("Excepción producida por la seguridad del fichero: "+file.toString(),se);
 		} catch (PluginDocumentationException e) {
 			LOGGER.error("Excepción interna: "+file.toString(),e);
 		}
 		return FileVisitResult.CONTINUE;
+	}
+	
+	/**
+	 * Determina si la cadena pasada por parámetro tiene o no coincidencia con las expresiones regulares pasadas en las exclusiones
+	 * @param resourcePath Cadena a comrpobar
+	 * @param excludes Expresiones regulares que marcan las expresiones
+	 * @return Devuelve true si no existen coincidencias, en caso contrario, devuelve false
+	 */
+	private boolean isNoExcluded(String resourcePath, String[] excludes){
+		for (String exclude : excludes) {
+			try{
+				if(resourcePath.replace("\\", "/").matches(exclude.replace("\\", "/"))){
+					LOGGER.info("Se exluye el fichero: "+resourcePath+" por al limitación: "+exclude);
+					return false;
+				}
+			}catch(PatternSyntaxException e){
+				LOGGER.error("Sintáxis incorrecta para el patrón de exclusión: "+exclude);
+				throw e;
+			}
+		}
+		return true;
 	}
 
 	/** {@inheritDoc} */

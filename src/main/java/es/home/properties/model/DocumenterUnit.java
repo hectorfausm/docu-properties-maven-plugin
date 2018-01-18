@@ -26,7 +26,7 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	/** TODO Obligatorio */
 	private String mandatory;
 	
-	/** TODO Patrón de la propiedad */
+	/** Patrón de la propiedad */
 	private String pattern;
 	
 	/** Ejemplos */
@@ -208,10 +208,6 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 			String assignationAnnotationString, boolean addDescription, boolean addExample,
 			boolean addState){
 		
-		if(propertyNotPrintedToEnvironment(environment)){
-			return "";
-		}
-		
 		StringBuilder res = new StringBuilder();
 		
 		// Descripción tanto para las propiedades como para las descripciones simples
@@ -235,6 +231,9 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 			res.append("\n"+propertyName+assignationAnnotationString);
 		}
 		
+		// Se calcula el valor de la propiedad
+		String value = "";
+		
 		// Si no hay valor por entorno
 		if(environments==null || !environments.containsKey(environment) || environments.get(environment)==null){
 			
@@ -244,21 +243,34 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 				for (Entry<String, String> entry : specialDefaultEnvironments.entrySet()) {
 					if(environment.matches(entry.getKey())){
 						hashValue = true;
-						res.append(entry.getValue().replaceAll("^\\s+", ""));
+						value = entry.getValue().replaceAll("^\\s+", "");
 					}
 				}
 			}
 			
 			// Si no hay valor se debe comprobar si hay valor por defecto base
 			if(!hashValue && getDefaultValue()!=null){
-				res.append(getDefaultValue());
+				value = getDefaultValue();
 			}
 		}else{
-			res.append(environments.get(environment).replaceAll("^\\s+", ""));
+			value = environments.get(environment).replaceAll("^\\s+", "");
 		}
 		
-		// Separación 
-		res.append("\n\n");
+		if(value!=null && !value.isEmpty()){
+			
+			// Valor
+			res.append(value);
+			
+			// Separación 
+			res.append("\n\n");
+			
+		}else if(isVisibleWithValue()){
+			return "";
+		}else{
+			
+			// Solo se incluye el espacio
+			res.append("\n\n");
+		}
 		
 		return res.toString();
 	}

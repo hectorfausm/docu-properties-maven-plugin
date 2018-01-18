@@ -54,7 +54,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	private String[] environments;
 	
 	/**
-	 * Entornos de desarrollo a documentar. Cada uno de los entornos especificados se comportarán como un elemento más de las propiedades
+	 * Varaibles de filtrado
 	 * <pre>
 	 * 		&lt;variables&gt;
 	 * 			&lt;variable&gt;
@@ -174,6 +174,10 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	@Parameter(defaultValue="false")
 	private boolean validate;
 	
+	/** Lista con los ficheros a excluir de la aplicación */
+	@Parameter
+	private String[] excludes;
+	
 	/**
 	 * Obtiene el objeto de configuración
 	 * @return Devuelve una instancia de {@link MavenDocumenterPropertiesConfiguration} con las
@@ -203,6 +207,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			this.configuration.setReadCharsets(this.readCharsets);
 			this.configuration.setVariables(this.variables);
 			this.configuration.setValidate(this.validate);
+			this.configuration.setExcludes(this.excludes);
 		}
 		return this.configuration;
 	}
@@ -561,8 +566,8 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	}
 	
 	/**
-	 * Método que permite obtener la líneas de un fichero. Si el primer charset intentado no es correcto,
-	 * se ejecuta de forma recurisva el método hasta haber agotasdo las posibilidades de los charset
+	 * Permite obtener la líneas de un fichero. Si el primer charset intentado no es correcto,
+	 * se ejecuta de forma recurisva hasta haber agotasdo las posibilidades de los charset
 	 * pasados por parámetro. En caso de que ninguno de los charset sea correcto, se devuelve null.
 	 * @throws IOException 
 	 * */
