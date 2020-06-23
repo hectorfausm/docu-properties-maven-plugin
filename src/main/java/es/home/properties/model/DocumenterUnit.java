@@ -1,8 +1,10 @@
 package es.home.properties.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -139,26 +141,32 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	public void setVisibleWithValue(boolean visibleWithValue) {
 		this.visibleWithValue = visibleWithValue;
 	}
-	public void addEnvironment(String key, String line, Variable... filterVariables) {
-		if(key!=null && line!=null){
+	public void addEnvironment(String key, String value, Variable... filterVariables) {
+		if(key!=null && (isMultitenant || value!=null)){
 			if(environments==null){
 				environments = new HashMap<>();
 			}
+			if(value!=null) {
+				value = StringUtils.filterStringWithVariables(value, filterVariables, logger);
+			}
 			environments.put(
 				key,
-				StringUtils.filterStringWithVariables(line, filterVariables, logger)
+				value
 			);
 		}
 	}
 	public void addSpecialDefaultEnvironment(String key,
-			String line, Variable[] variables) {
-		if(key!=null && line!=null){
+			String value, Variable[] variables) {
+		if(key!=null && (isMultitenant || value!=null)){
 			if(specialDefaultEnvironments==null){
 				specialDefaultEnvironments = new HashMap<>();
 			}
+			if(value!=null) {
+				value = StringUtils.filterStringWithVariables(value, variables, logger);
+			}
 			specialDefaultEnvironments.put(
 				key,
-				StringUtils.filterStringWithVariables(line, variables, logger)
+				StringUtils.filterStringWithVariables(value, variables, logger)
 			);
 		}
 	}
@@ -240,6 +248,8 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 		
 		// Si la propiedad es multitenant, se obtienen los valores multitenant
 		if(isMultitenant) {
+			logger.info("environments: "+environments);
+			logger.info("Special Environments: "+specialDefaultEnvironments);
 			valuesByTenant = getMultitenantValuesFromEnvironment(environment);
 
 			
@@ -318,8 +328,19 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 			valuesByTenant.put(entry.getKey(), entry.getValue());
 		}
 		
-		// Si no hay valores, se añade el tenant por defecto con el valor por defecto
-		if(valuesByTenant.isEmpty()) {
+		// Se rellenan los valores de tenants vacíos con el valor por defecto
+		List<String> emptyTenants = new ArrayList<>();
+		for (Entry<String, String> entry : valuesByTenant.entrySet()) {
+			if(entry.getValue()==null || entry.getValue().isEmpty()) {
+				emptyTenants.add(entry.getKey());
+			}
+		}
+		for (String key : emptyTenants) {
+			valuesByTenant.put(key, getDefaultValue());
+		}
+		
+		// Si no hay tenant por deecto, se añade
+		if(!valuesByTenant.containsKey(defaultTenant)) {
 			valuesByTenant.put(defaultTenant, getDefaultValue());
 		}
 		
@@ -346,7 +367,10 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 				for (Entry<String, String> entry : specialDefaultEnvironments.entrySet()) {
 					if(environment.matches(entry.getKey())){
 						hashValue = true;
-						value = entry.getValue().trim();
+						value = entry.getValue();
+						if(value!=null) {
+							value = value.trim();
+						}
 					}
 				}
 			}
@@ -356,7 +380,10 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 				value = getDefaultValue().trim();
 			}
 		}else{
-			value = environments.get(environment).trim();
+			value = environments.get(environment);
+			if(value!=null) {
+				value = value.trim();
+			}
 		}
 		return value;
 	}
@@ -444,7 +471,10 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 			String realKey = key.substring(0, key.indexOf(MavenDocumenterPropertiesConfiguration.MULTITENANT_DEFINED_STRING));
 			if(environment.matches(realKey)) {
 				String tenantKey = key.substring(key.indexOf(MavenDocumenterPropertiesConfiguration.MULTITENANT_DEFINED_STRING)+1, key.length());
-				String value = specialDefaultEnvironments.get(key).replaceAll("^\\s+", "");
+				String value = specialDefaultEnvironments.get(key);
+				if(value!=null) {
+					value = value.trim();
+				}
 				result.put(tenantKey, value);
 			}
 		}
@@ -468,8 +498,6 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 			return values;
 		}
 		
-		logger.info("Entornos simples para multitenant: "+environments);
-		
 		for (Entry<String, String> entry : environments.entrySet()) {
 			
 			// Clave de la propiedad
@@ -482,6 +510,9 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 			String realKey = key.substring(0, key.indexOf(MavenDocumenterPropertiesConfiguration.MULTITENANT_DEFINED_STRING));
 			String tenantKey = key.substring(key.indexOf(MavenDocumenterPropertiesConfiguration.MULTITENANT_DEFINED_STRING)+1, key.length());
 			if(environment.equals(realKey)) {
+				if(value!=null) {
+					value = value.trim();
+				}
 				values.put(tenantKey, value);
 			}
 		}

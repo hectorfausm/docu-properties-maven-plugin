@@ -368,9 +368,6 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 					break;
 			}
 		}
-		if(isMultitenant) {
-			getLog().info(units.toString());
-		}
 		return units;
 	}
 
@@ -399,7 +396,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			String key = getDocumenter().getConfiguration().getSpecialDefaultEnvironmentFromLine(line, isMultitenant);
 			String value = getDocumenter().getConfiguration().getValueFromLine(line, DocumenterLineType.SPECIAL_DEFAULT_ENVIRONMENT, isMultitenant);
 			getLog().debug("Obteniendo una variable de entorno especial: key -> "+((key==null)?"null":key)+" - value-> "+((value==null)?"null":value));
-			if(key!=null && value!=null){
+			if(key!=null && (isMultitenant || value!=null)) {
 				auxDocumenterUnit.addSpecialDefaultEnvironment(
 					key,
 					value,
@@ -471,12 +468,12 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			String key = getDocumenter().getConfiguration().getEnvironmentFromLine(line, isMultitenant);
 			String value = getDocumenter().getConfiguration().getValueFromLine(line, DocumenterLineType.ENVIRONMENT_VALUE, isMultitenant);
 			getLog().debug("Obteniendo una variable de entorno: key -> "+((key==null)?"null":key)+" - value-> "+((value==null)?"null":value));
-			if(key!=null && value!=null){
+			if(key!=null &&(isMultitenant || value!=null)) {
 				auxDocumenterUnit.addEnvironment(
 					key,
 					value,
 					getConfiguration().getVariables()
-				);
+				);	
 			}
 		}
 	}
