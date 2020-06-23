@@ -15,7 +15,7 @@ public interface MavenPropertiesDocumenter {
 	public abstract void initializeFile() throws PluginDocumentationException;
 	
 	/** Permite derrar el documentador 
-	 * @throws SiaException */
+	 * @throws PluginDocumentationException */
 	public abstract void closeFile() throws PluginDocumentationException;
 
 	/** Permite documentar una unidad de documentación 

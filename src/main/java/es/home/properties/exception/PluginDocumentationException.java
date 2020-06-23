@@ -26,31 +26,38 @@ public class PluginDocumentationException extends Exception{
 	private PluginDocumentationExceptionCode code;
 	
 	/**
-	 * Contructor
-	 * */
+	 * Constructor
+	 * @param msg
+	 * @param code
+	 * @param e
+	 */
 	public PluginDocumentationException(String msg, PluginDocumentationExceptionCode code, Throwable e) {
 		super(msg, e);
 		this.code = code;
 	}
-	
+
 	/**
-	 * Contructor
-	 * */
+	 * Cosntructor
+	 * @param msg
+	 * @param code
+	 */
 	public PluginDocumentationException(String msg, PluginDocumentationExceptionCode code) {
 		super(msg);
 		this.code = code;
 	}
 	
 	/**
-	 * Contructor
-	 * */
+	 * Constructor
+	 * @param msg
+	 */
 	public PluginDocumentationException(String msg) {
 		super(msg);
 	}
 	
 	/**
-	 * Contructor
-	 * */
+	 * Constructor 
+	 * @param code
+	 */
 	public PluginDocumentationException(PluginDocumentationExceptionCode code) {
 		super();
 		this.code = code;
@@ -58,6 +65,7 @@ public class PluginDocumentationException extends Exception{
 	
 	/**
 	 * Obtiene el mensaje asociado al codigo
+	 * @return String
 	 * */
 	public String geti18Message() {
 		return bundle.getString(getCode().getCode());

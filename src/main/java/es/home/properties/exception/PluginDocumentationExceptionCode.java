@@ -60,6 +60,12 @@ public enum PluginDocumentationExceptionCode {
 	 * */
 	private String prefix;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param internNumber 	Código
+	 * @param prefix		Prefijo
+	 */
 	private PluginDocumentationExceptionCode(int internNumber, String prefix) {
 		this.internNumber = internNumber;
 		this.prefix = prefix;

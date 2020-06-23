@@ -210,8 +210,13 @@ public abstract class DocuPropertiesAbstractWriteProperties extends DocuProperti
 				addExample,
 				addState
 			));
+			
+			// Se añade separación entre cada propiedad solo si se pudo imprimir
+			if(documenterUnit.isWasVisible()) {
+				propertieFileContent.append("\n\n");
+			}
 		}
-		
+		propertieFileContent.delete(propertieFileContent.length()-2, propertieFileContent.length());
 		return propertieFileContent.toString();
 	}
 }

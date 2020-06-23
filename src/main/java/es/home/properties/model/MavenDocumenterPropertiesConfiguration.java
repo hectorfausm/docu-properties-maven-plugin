@@ -10,6 +10,7 @@ import org.apache.maven.project.MavenProject;
 public class MavenDocumenterPropertiesConfiguration {
 
 	public static final String ANNOTATION_DEFINED_STRING = "@";
+	public static final String MULTITENANT_DEFINED_STRING = "$";
 	
 	//	ELEMENTOS DEL PLUGIN
 	/** Proyecto maven */
@@ -96,6 +97,12 @@ public class MavenDocumenterPropertiesConfiguration {
 	/** Determian si se debe o no mantener la estructura de carpetas en una compilación */
 	private boolean maintainFolderStructure;
 	
+	/** Determina que un fichero de propiedades es multitenant */
+	private String multitenantFileAttribute;
+	
+	/** Valor por defecto para el tenant, se usará en caso de encontrar ficheros multitenant */
+	private String defaultTenant;
+	
 	/**
 	 * Permite identificar si una cadena es una anotación
 	 * @return true en caso de ser una anotación, en caso contrario, false
@@ -115,7 +122,6 @@ public class MavenDocumenterPropertiesConfiguration {
 	/**
 	 * Obtiene el tipo de línea.
 	 * @param line Línea de la que extraer el tipo de línea
-	 * @param lastDocumenterLineType 
 	 * @return Devuleve una instancia de {@link DocumenterLineType}
 	 * */
 	public DocumenterLineType getLineType(String line) {
@@ -155,6 +161,8 @@ public class MavenDocumenterPropertiesConfiguration {
 					res = DocumenterLineType.INIT_SIMPLE_COMMENT;
 				}else if(lineCopy.startsWith(attrpattern)){
 					res = DocumenterLineType.PATTERN;
+				}else if(lineCopy.startsWith(multitenantFileAttribute)){
+					res = DocumenterLineType.MULTITENANT;
 				}
 				
 			// Si no, es cualquier cosa imprimible
@@ -167,15 +175,35 @@ public class MavenDocumenterPropertiesConfiguration {
 	
 	/**
 	 * Permite obtener el Environment de la línea
+	 * @param isMultitenant Determina si el fichero para el que se está ejecutando la operación es o no multitenant
 	 * @return Devuelve la clave que define el environment de la línea
 	 * */
-	public String getEnvironmentFromLine(String line) {
-		int index = getEnvironmentIndexOf(line);
+	public String getEnvironmentFromLine(String line, boolean isMultitenant) {
+		
+		// Si la línea no contiene un espacio, se añade al final
+		if(!line.contains(" ")) {
+			line = line+" ";
+		}
+
+		// Se obtiene la posición final en la cadena del entorno
+		int index = getEnvironmentIndexOf(line, isMultitenant);
 		if(index>0){
 			int initIndx = line.indexOf(ANNOTATION_DEFINED_STRING);
 			if(initIndx>0){
-				logger.debug("getEnvironmentIndexOff: initIndex -> "+initIndx+" - index-> "+index);
-				return line.substring(initIndx+1,index);
+				
+				// Si es multitenant se quita el espacio final, que se añade para obtener el valor
+				if(isMultitenant) {
+					index--;
+				}
+				
+				// Si es multitenant y no existe tenant, se añade el tenant por defecto
+				String environment = line.substring(initIndx+1,index);
+				if(isMultitenant && !environment.contains(MULTITENANT_DEFINED_STRING)) {
+					environment=environment+MULTITENANT_DEFINED_STRING+defaultTenant;
+				}
+				
+				// Se obtiene el entorno
+				return environment;
 			}
 		}
 		return null;
@@ -187,7 +215,7 @@ public class MavenDocumenterPropertiesConfiguration {
 	 * @param lineType Tipo de línea.
 	 * @return Devuleve el valor según el tipo de línea
 	 * */
-	public String getValueFromLine(String line, DocumenterLineType lineType) {
+	public String getValueFromLine(String line, DocumenterLineType lineType, boolean isMultitenant) {
 		int indexOf = -1;
 		switch(lineType){
 			case DESCRIPTION:
@@ -223,10 +251,10 @@ public class MavenDocumenterPropertiesConfiguration {
 			case FINISH:
 				return line;
 			case ENVIRONMENT_VALUE:
-				indexOf = getEnvironmentIndexOf(line);
+				indexOf = getEnvironmentIndexOf(line, isMultitenant);
 				break;
 			case SPECIAL_DEFAULT_ENVIRONMENT:
-				indexOf = getSpecialDEfaultEnvironmentIndexOf(line);
+				indexOf = getSpecialDEfaultEnvironmentIndexOf(line, isMultitenant);
 				break;
 			default:
 				break;
@@ -244,8 +272,8 @@ public class MavenDocumenterPropertiesConfiguration {
 	 * @param line
 	 * @return
 	 */
-	private int getSpecialDEfaultEnvironmentIndexOf(String line) {
-		String key = getSpecialDefaultEnvironmentFromLine(line);
+	private int getSpecialDEfaultEnvironmentIndexOf(String line, boolean isMultitenant) {
+		String key = getSpecialDefaultEnvironmentFromLinePlain(line, isMultitenant);
 		return line.indexOf(key)+1+key.length();
 	}
 
@@ -421,6 +449,18 @@ public class MavenDocumenterPropertiesConfiguration {
 	public void setMaintainFolderStructure(boolean maintainFolderStructure) {
 		this.maintainFolderStructure = maintainFolderStructure;
 	}
+	public String getMultitenantFileAttribute() {
+		return multitenantFileAttribute;
+	}
+	public void setMultitenantFileAttribute(String multitenantFileAttribute) {
+		this.multitenantFileAttribute = multitenantFileAttribute;
+	}
+	public void setDefaultTenant(String defaultTenant) {
+		this.defaultTenant = defaultTenant;
+	}
+	public String getDefaultTenant() {
+		return defaultTenant;
+	}
 	
 	/**
 	 * Establece un Atributo para Un comentario simple
@@ -433,15 +473,28 @@ public class MavenDocumenterPropertiesConfiguration {
 	/**
 	 * Determina el indexOf de un atributo de entorno
 	 * @param line linea de la cual extraer el valor
+	 * @param isMultitenant Determina si se está gestionando un fichero en modo multitenant o no
 	 * @return devuleve el indexOf si lo encuentra, en caso contrario, devuelve false.
 	 * */
-	private int getEnvironmentIndexOf(String line) {
+	private int getEnvironmentIndexOf(String line, boolean isMultitenant) {
 		int firstAnnotationIn = line.indexOf(ANNOTATION_DEFINED_STRING);
 		String lineCopy = line.substring(firstAnnotationIn+1);
 		if(firstAnnotationIn>0 && lineCopy!=null){
 			for (String environment : getEnvironments()) {
 				if(lineCopy.startsWith(environment)){
-					return line.indexOf(environment)+environment.length();
+					
+					// Si la línea no contiene espacio, se añade para evitar errores
+					if(!line.contains(" ")) {
+						line = line+" ";
+					}
+					
+					// Si es multitenant, se añade además, l alongitud del tenant
+					int environemntIndex = line.indexOf(environment)+environment.length();
+					if(isMultitenant) {
+						return line.indexOf(" ", environemntIndex)+1;
+					}else {
+						return environemntIndex;
+					}
 				}
 			}					
 		}
@@ -464,11 +517,66 @@ public class MavenDocumenterPropertiesConfiguration {
 		return false;
 	}
 
-	public String getSpecialDefaultEnvironmentFromLine(String line) {
+	/**
+	 * Ontiene un entorno de patrón a partir de una línea de texto
+	 * @param line 			{@link String} 	Línea de la que obtener el entorno
+	 * @param isMultitenant	{@link Boolean}	Determina si el fichero con el que se está trabajando es o no multitenant
+	 * 
+	 * @return {@link String} Con la clave de patrón para un entorno
+	 */
+	public String getSpecialDefaultEnvironmentFromLine(String line, boolean isMultitenant) {
 		int initIndex = line.indexOf(ANNOTATION_DEFINED_STRING+ANNOTATION_DEFINED_STRING)+2;
+		
+		// Si no tiene espacio, se supone que es una clave sin valor y se añade el espacio para que se trate como tal
+		if(line.substring(initIndex).indexOf(" ")<=0) {
+			line=line+" ";
+		}
+		
+		// Si los límites son correctos
 		int spaceIndex = line.substring(initIndex).indexOf(" ")+initIndex;
 		if(initIndex>=0 && spaceIndex>initIndex){
-			return line.substring(initIndex, spaceIndex);
+			
+			// Se obtiene el resultado
+			String result = line.substring(initIndex, spaceIndex);
+			
+			// Si el fichero es multitenant y no existe tenant definido, se añade el tenant por defecto
+			if(isMultitenant && !result.contains(MULTITENANT_DEFINED_STRING)) {
+				result = result+MULTITENANT_DEFINED_STRING+defaultTenant;
+			}
+					
+			return result;
+			
+		// Si no, se entiende que se ha introducido mal el perfil
+		}else{
+			return null;
+		}
+	}
+	
+	/**
+	 * Ontiene un entorno de patrón a partir de una línea de texto sin tener en cuenta el multitenant
+	 * @param line 			{@link String} 	Línea de la que obtener el entorno
+	 * @param isMultitenant	{@link Boolean}	Determina si el fichero con el que se está trabajando es o no multitenant
+	 * 
+	 * @return {@link String} Con la clave de patrón para un entorno
+	 */
+	private String getSpecialDefaultEnvironmentFromLinePlain(String line, boolean isMultitenant) {
+		int initIndex = line.indexOf(ANNOTATION_DEFINED_STRING+ANNOTATION_DEFINED_STRING)+2;
+		
+		// Si no tiene espacio, se supone que es una clave sin valor y se añade el espacio para que se trate como tal
+		if(line.substring(initIndex).indexOf(" ")<=0) {
+			line=line+" ";
+		}
+		
+		// Si los límites son correctos
+		int spaceIndex = line.substring(initIndex).indexOf(" ")+initIndex;
+		if(initIndex>=0 && spaceIndex>initIndex){
+			
+			// Se obtiene el resultado
+			String result = line.substring(initIndex, spaceIndex);	
+					
+			return result;
+			
+		// Si no, se entiende que se ha introducido mal el perfil
 		}else{
 			return null;
 		}

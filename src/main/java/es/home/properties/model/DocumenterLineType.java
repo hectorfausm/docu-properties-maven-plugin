@@ -31,5 +31,8 @@ public enum DocumenterLineType {
 	/** Línea de iniciaode comentario simple */
 	INIT_SIMPLE_COMMENT, 
 	/** Etorno especial que permite añadir valores por defecto para un patrón de perfil */
-	SPECIAL_DEFAULT_ENVIRONMENT
+	SPECIAL_DEFAULT_ENVIRONMENT,
+	
+	/** Si aparece en un fichero, se trata de un fichero multitenant */
+	MULTITENANT
 }

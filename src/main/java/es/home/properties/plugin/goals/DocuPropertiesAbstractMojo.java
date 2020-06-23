@@ -138,6 +138,10 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	@Parameter(defaultValue="${project.build.directory}/docu-properties")
 	private String output;
 	
+	/** Determina que un fichero de propiedades es multitenant */
+	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"MultitenantFile")
+	private String multitenantFileAttribute;
+	
 	/** 
 	 * <pre>
 	 * 	Atributo que determina el charset por defecto para la escritura de los ficheros de propiedades. La opción 
@@ -178,6 +182,10 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	@Parameter
 	private String[] excludes;
 	
+	/** Valor por defecto para el tenant */
+	@Parameter(defaultValue="DEFAULT")
+	private String defaultTenant;
+	
 	/**
 	 * Obtiene el objeto de configuración
 	 * @return Devuelve una instancia de {@link MavenDocumenterPropertiesConfiguration} con las
@@ -208,6 +216,8 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			this.configuration.setVariables(this.variables);
 			this.configuration.setValidate(this.validate);
 			this.configuration.setExcludes(this.excludes);
+			this.configuration.setMultitenantFileAttribute(this.multitenantFileAttribute);
+			this.configuration.setDefaultTenant(this.defaultTenant);
 		}
 		return this.configuration;
 	}
@@ -289,12 +299,22 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		Boolean startDocumenterUnit = false;
 		DocumenterUnit auxDocumenterUnit = null;
 		DocumenterLineType lastDocumenterLineType = null;
+		
+		// Se determina si el fichero es o no multitenant
+		int multitenantPosition = getFileMultitenantPosition(lines);
+		boolean isMultitenant = false;
+		if(multitenantPosition>=0) {
+			isMultitenant = true;
+			lines.remove(multitenantPosition);
+		}
+		
+		// Se recorre el resto de líneas
 		for (String line : lines) {
 			DocumenterLineType type = getConfiguration().getLineType(line);
 			getLog().debug("Obteniendo la información de la línea: \""+line+"\" y tipo: "+type);
 			switch(type){
 				case INIT:
-					auxDocumenterUnit = setInitValue(auxDocumenterUnit,lastDocumenterLineType);
+					auxDocumenterUnit = setInitValue(auxDocumenterUnit, lastDocumenterLineType, isMultitenant);
 					lastDocumenterLineType = DocumenterLineType.INIT;
 					startDocumenterUnit = true;
 					break;
@@ -324,11 +344,11 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 					lastDocumenterLineType = DocumenterLineType.VALUES;
 					break;
 				case ENVIRONMENT_VALUE:
-					setEnvironmentValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
+					setEnvironmentValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType, isMultitenant);
 					lastDocumenterLineType = DocumenterLineType.ENVIRONMENT_VALUE;
 					break;
 				case SPECIAL_DEFAULT_ENVIRONMENT:
-					setSpecialDefaultEnvironmentValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType);
+					setSpecialDefaultEnvironmentValue(startDocumenterUnit,line,auxDocumenterUnit,lastDocumenterLineType, isMultitenant);
 					lastDocumenterLineType = DocumenterLineType.SPECIAL_DEFAULT_ENVIRONMENT;
 					break;
 				case ANYTHING:
@@ -339,7 +359,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 					lastDocumenterLineType = DocumenterLineType.VISIBLE_WITH_VALUE;
 					break;
 				case INIT_SIMPLE_COMMENT:
-					auxDocumenterUnit = setInitValue(auxDocumenterUnit,lastDocumenterLineType);
+					auxDocumenterUnit = setInitValue(auxDocumenterUnit, lastDocumenterLineType, isMultitenant);
 					lastDocumenterLineType = DocumenterLineType.INIT_SIMPLE_COMMENT;
 					startDocumenterUnit = true;
 					break;
@@ -348,15 +368,36 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 					break;
 			}
 		}
+		if(isMultitenant) {
+			getLog().info(units.toString());
+		}
 		return units;
+	}
+
+	/**
+	 * Obtiene la posición que ocupa la línea que indicia que un fichero de propiedades es multitenant
+	 * 
+	 * @param lines {@link List<String>} Líneas en las que realizar la búsqueda
+	 * 
+	 * @return {@link Integer}. -1 si no encuentra una línea que indique el fichero es multitenant o false en caso contrario
+	 */
+	private int getFileMultitenantPosition(List<String> lines) {
+		int size = lines.size();
+		for (int i = 0; i < size; i++) {
+			DocumenterLineType type = getConfiguration().getLineType(lines.get(0));
+			if(DocumenterLineType.MULTITENANT.equals(type)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	private void setSpecialDefaultEnvironmentValue(Boolean startAnnotation,
 			String line, DocumenterUnit auxDocumenterUnit,
-			DocumenterLineType lastDocumenterLineType) {
+			DocumenterLineType lastDocumenterLineType, boolean isMultitenant) {
 		if(startAnnotation){
-			String key = getDocumenter().getConfiguration().getSpecialDefaultEnvironmentFromLine(line);
-			String value = getDocumenter().getConfiguration().getValueFromLine(line, DocumenterLineType.SPECIAL_DEFAULT_ENVIRONMENT);
+			String key = getDocumenter().getConfiguration().getSpecialDefaultEnvironmentFromLine(line, isMultitenant);
+			String value = getDocumenter().getConfiguration().getValueFromLine(line, DocumenterLineType.SPECIAL_DEFAULT_ENVIRONMENT, isMultitenant);
 			getLog().debug("Obteniendo una variable de entorno especial: key -> "+((key==null)?"null":key)+" - value-> "+((value==null)?"null":value));
 			if(key!=null && value!=null){
 				auxDocumenterUnit.addSpecialDefaultEnvironment(
@@ -425,15 +466,15 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	 * */
 	private void setEnvironmentValue(Boolean startAnnotation,
 			String line, DocumenterUnit auxDocumenterUnit,
-			DocumenterLineType lastDocumenterLineType) {
+			DocumenterLineType lastDocumenterLineType, boolean isMultitenant) {
 		if(startAnnotation){
-			String key = getDocumenter().getConfiguration().getEnvironmentFromLine(line);
-			String value = getDocumenter().getConfiguration().getValueFromLine(line, DocumenterLineType.ENVIRONMENT_VALUE);
+			String key = getDocumenter().getConfiguration().getEnvironmentFromLine(line, isMultitenant);
+			String value = getDocumenter().getConfiguration().getValueFromLine(line, DocumenterLineType.ENVIRONMENT_VALUE, isMultitenant);
 			getLog().debug("Obteniendo una variable de entorno: key -> "+((key==null)?"null":key)+" - value-> "+((value==null)?"null":value));
 			if(key!=null && value!=null){
 				auxDocumenterUnit.addEnvironment(
-					getConfiguration().getEnvironmentFromLine(line),
-					getConfiguration().getValueFromLine(line, DocumenterLineType.ENVIRONMENT_VALUE),
+					key,
+					value,
 					getConfiguration().getVariables()
 				);
 			}
@@ -449,7 +490,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		if(startAnnotation){
 			getLog().debug("Obteniendo los valores de la unidad de documentación");
 			auxDocumenterUnit.setValues(
-				getConfiguration().getValueFromLine(line,DocumenterLineType.VALUES),
+				getConfiguration().getValueFromLine(line,DocumenterLineType.VALUES, false),
 				getConfiguration().getVariables()
 			);
 		}
@@ -464,7 +505,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		if(startAnnotation){
 			getLog().debug("Obteniendo el estado de la unida de documentación");
 			auxDocumenterUnit.setState(
-				getConfiguration().getValueFromLine(line,DocumenterLineType.STATE),
+				getConfiguration().getValueFromLine(line,DocumenterLineType.STATE, false),
 				getConfiguration().getVariables()
 			);
 		}
@@ -479,7 +520,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		if(startAnnotation){
 			getLog().debug("Obteniendo la llinea ejemplo de la unidad de documentación");
 			auxDocumenterUnit.setExample(
-				getConfiguration().getValueFromLine(line,DocumenterLineType.EXAMPLE),
+				getConfiguration().getValueFromLine(line,DocumenterLineType.EXAMPLE, false),
 				getConfiguration().getVariables()
 			);
 		}
@@ -493,7 +534,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		if(startAnnotation){
 			getLog().debug("Obteniendo el patrón de la unidad de documentación");
 			auxDocumenterUnit.setPattern(
-				getConfiguration().getValueFromLine(line,DocumenterLineType.PATTERN),
+				getConfiguration().getValueFromLine(line,DocumenterLineType.PATTERN, false),
 				getConfiguration().getVariables()
 			);
 		}
@@ -509,7 +550,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		if(startAnnotation){
 			getLog().debug("Obteniendo la descripción de la unidad de documentación");
 			auxDocumenterUnit.setDescription(
-				getConfiguration().getValueFromLine(line,DocumenterLineType.DESCRIPTION),
+				getConfiguration().getValueFromLine(line,DocumenterLineType.DESCRIPTION, false),
 				getConfiguration().getVariables()
 			);
 		}
@@ -525,7 +566,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			DocumenterLineType lastDocumenterLineType) {
 		getLog().debug("Finalizando unidad de documentación iniciada. startAnnotation: "+startAnnotation);
 		if(startAnnotation){
-			String lineThis = getConfiguration().getValueFromLine(line,DocumenterLineType.FINISH);
+			String lineThis = getConfiguration().getValueFromLine(line,DocumenterLineType.FINISH, false);
 			int indexOf = lineThis.indexOf(asignationAnnotationString);
 			if(indexOf>=0){
 				String propertyName = lineThis.substring(0,indexOf);
@@ -542,9 +583,13 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	 * Establece un valor inicial para una unidad de documentación
 	 * @return 
 	 * */
-	private DocumenterUnit setInitValue(DocumenterUnit auxDocumenterUnit, DocumenterLineType lastDocumenterLineType) {
+	private DocumenterUnit setInitValue(DocumenterUnit auxDocumenterUnit, DocumenterLineType lastDocumenterLineType, boolean isMultitenant) {
 		getLog().debug("Iniciando una unidad de documentación");
 		auxDocumenterUnit = new DocumenterUnit(getLog());
+		auxDocumenterUnit.setMultitenant(isMultitenant);
+		if(isMultitenant) {
+			auxDocumenterUnit.setDefaultTenant(getConfiguration().getDefaultTenant());
+		}
 		return auxDocumenterUnit;
 	}
 	

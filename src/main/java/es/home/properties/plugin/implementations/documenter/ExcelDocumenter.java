@@ -43,7 +43,7 @@ public class ExcelDocumenter extends PseudoImplementationDocumenter{
 	}
 
 	/** {@inheritDoc} 
-	 * @throws SiaException */
+	 * @throws PluginDocumentationException */
 	@Override
 	public void closeFile() throws PluginDocumentationException {
 		getLogger().debug("Cerrando el fichero");

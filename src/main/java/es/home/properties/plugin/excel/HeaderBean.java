@@ -23,8 +23,8 @@ public class HeaderBean {
 	/**
 	 * Constructor que permite la isntanciación de una cabecera de manejador de ficheros excel
 	 * @param beanMap Mapa de claves. Por cada elemento del mapa se encuentra:
-	 * 	- key -> Clave identificadora de la columna
-	 *  - value -> Valor que se mostrará en al columna
+	 * 	- key: Clave identificadora de la columna
+	 *  - value: Valor que se mostrará en al columna
 	 * */
 	public HeaderBean(Map<String,CellHeaderBean> beanMap) {
 		this(beanMap,null);
@@ -32,9 +32,9 @@ public class HeaderBean {
 	
 	/**
 	 * Constructor que permite la isntanciación de una cabecera de manejador de ficheros excel
-	 * @param beanMap Mapa de claves. Por cada elemento del mapa se encuentra:
-	 * 	- key -> Clave identificadora de la columna
-	 *  - value -> Valor que se mostrará en al columna
+	 * @param beans Mapa de claves. Por cada elemento del mapa se encuentra:
+	 * 	- key: Clave identificadora de la columna
+	 *  - value: Valor que se mostrará en al columna
 	 * @param indexedColor Color a mostrar en la cabecera del fichero excel cuando este sea escrito.
 	 * */
 	public HeaderBean(Map<String,CellHeaderBean> beans,IndexedColors indexedColor) {
@@ -76,8 +76,8 @@ public class HeaderBean {
 	/**
 	 * Genera una cabecera a partir de un mapa con las posiciones que ocupa cada cabecera de forma aleatoria
 	 * @param keysMap Mapa con las claves de la cabecera
-	 * 	- key -> Identificador de la celda
-	 *  - value -> Decripción de la celda
+	 * 	- key: Identificador de la celda
+	 *  - value: Decripción de la celda
 	 * */
 	public static Map<String,CellHeaderBean> generateHeaderBeanMapFromKeysMap(Map<String,String>keysMap){
 		Map<String,CellHeaderBean> beans = new HashMap<String, CellHeaderBean>(); 

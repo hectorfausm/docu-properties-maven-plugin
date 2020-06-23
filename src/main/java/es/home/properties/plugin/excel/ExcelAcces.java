@@ -60,10 +60,10 @@ public abstract class ExcelAcces {
 	
 	/**
 	 * Método que incializa el fichero excel. Cogiendo como cabecera del fichero, la primera de sus líneas
-	 *  @param filePath Dirección del fichero -> Si la dirección del fichero es nula, se crea un manejador de ficheros
+	 *  @param filePath Dirección del fichero. Si la dirección del fichero es nula, se crea un manejador de ficheros
 	 * sin datos
 	 * @param excelType Tipo de fichero
-	 * @param header Cabecera del fichero -> Si es nula, se toma como cabecera la primera fila del manejador
+	 * @param headerMap Cabecera del fichero. i es nula, se toma como cabecera la primera fila del manejador
 	 * @return Devuelve un {@link ExcelFile} con la infromación de inicialización del fichero
 	 * */
 	public static ExcelFile initExcel(String filePath, ExcelType excelType, HeaderBean headerMap) throws PluginDocumentationException{
@@ -231,7 +231,6 @@ public abstract class ExcelAcces {
 	 * Método que permite escribir un objeto como la última de las filas de una hoja excel
 	 * @param file Fichero excel donde se escribirá la fila.
 	 * @param row Fila a escribir
-	 * @param headerStyle 
 	 * */
 	public static void addRowToFile(ExcelFile file, List<Object> row){
 		int last = file.getSheet().getLastRowNum();
@@ -247,7 +246,6 @@ public abstract class ExcelAcces {
 	 * Método que permite cambiar la cabecera de un manejador de ficheros excel
 	 * @param file Manejador de ficheros excel
 	 * @param header Nueva cabecera
-	 * @param color Enumerado con el nuevo color de la cabecera
 	 * @throws PluginDocumentationException 
 	 * */
 	public static void addHeader(ExcelFile file, HeaderBean header) throws PluginDocumentationException {
@@ -297,7 +295,6 @@ public abstract class ExcelAcces {
 	 * @param file Objeto manejador de ficheros excel
 	 * @param obj Objeto con la informaciÃ³n de la fila
 	 * @throws PluginDocumentationException 
-	 * @throws SiaException 
 	 * */
     public static void addBeanToRow(ExcelFile file, Serializable obj) throws PluginDocumentationException{
         List<Object> row = new ArrayList<Object>();
@@ -495,7 +492,7 @@ public abstract class ExcelAcces {
 	 * Método que permite la coneversión de un elemento numérico de Excell en una fecha
 	 * @param date Fecha a formatear
 	 * @param formatDate Formateador de la fecha. Este campo solo es necesario si la fecha es de formato cadena
-	 * @throws ParseException En caso de que existe algún error con el parseo de la fecha en formato cadena
+	 * @throws PluginDocumentationException En caso de que existe algún error con el parseo de la fecha en formato cadena
 	 * */
 	public static Date gateDateFromXMLNumeric(Object date, SimpleDateFormat formatDate) throws PluginDocumentationException{
 		String errorMsg = "Excepción producida durante el parseo de un fecha excel a una fecha java";
