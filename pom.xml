@@ -126,5 +126,11 @@
 	            </configuration>
 			</plugin>
 	    </plugins>
- 	</reporting>    
+ 	</reporting>
+ 	<distributionManagement>
+        <repository>
+            <id>Integracion_release</id>
+            <url>http://alepo.sia.es:9081/nexus/content/repositories/Integracion_release/</url>
+        </repository>
+    </distributionManagement>
 </project>
