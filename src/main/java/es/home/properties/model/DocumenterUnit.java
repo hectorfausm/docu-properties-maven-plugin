@@ -12,9 +12,11 @@ import org.apache.maven.plugin.logging.Log;
 
 import es.home.properties.plugin.utils.StringUtils;
 
+import static es.home.properties.model.MavenDocumenterPropertiesConfiguration.CYPHER_PREFIX;
+
 /** Unidad de documentación para cada una de las propiedades documentables de un fichero */
 public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> {
-	/** Identificador d ela serialización */
+	/** Identificador de la serialización */
 	private static final long serialVersionUID = 1L;
 
 	/** Tenant por defecto para propiedades multitenant */
@@ -63,7 +65,7 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	private boolean visibleWithValue;
 	
 	/**
-	 * Valor por defecto que será asignado a una propiedad en caso de no exisitir 
+	 * Valor por defecto que será asignado a una propiedad en caso de no existir
 	 * el entorno especificado por el usuario
 	 * */
 	private String defaultValue;
@@ -72,6 +74,11 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	 * Determina si la unidad de documentación se generó o no para un fichero multitenant
 	 */
 	private boolean isMultitenant;
+
+	/**
+	 * Determina si las unidades de documentación multitenant estarán ordenadas pro tenant o por orden de propiedad
+	 * */
+	private boolean orderByTenant;
 	
 	/**
 	 * Constructor de la Unidad de documentación
@@ -221,20 +228,126 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	public void setDefaultTenant(String defaultTenant) {
 		this.defaultTenant = defaultTenant;
 	}
+	public void setOrderByTenants(boolean orderByTenant){
+		this.orderByTenant = orderByTenant;
+	}
+	public boolean isOrderByTenant() {
+		return orderByTenant;
+	}
+
 	public boolean isWasVisible() {
 		return wasVisible;
 	}
-	
+
 	/**
 	 * Permite obtener una cadena representando las propiedades tal cual van a ser mostradas en
 	 * un fichero de propiedades.
-	 * @param environment Entorno del cual se quiere obtener el documentador
+	 * @param environment Entorno del que se quiere obtener el documentador
+	 * @param annotationString Cadena que representa una anotación para una línea en el fichero de propiedades
+	 * @param assignationAnnotationString Cadena que representa uan asignación en un fichero de propiedades
+	 * @param addState Determina si se debe o no añadir el estado en la documentación de la propiedad
+	 * @param addExample Determina si se debe o no añadir el ejemplo en la documentación de la propiedad
+	 * @param addDescription Determina si se debe o no añadir la descripción en la documentación de la propiedad
+	 * @return Devuelve la cadena que representa la propiedad compilada
+	 * */
+	public Map<String, String> getDocumenterToEnvironmentFileOrderedByTenants(String environment, String annotationString,
+			 String assignationAnnotationString, boolean addDescription, boolean addExample,
+			 boolean addState){
+
+		// Comentario asociado a la propiedad
+		StringBuilder propertyComment = new StringBuilder();
+
+		// Se calcula el/los valor/es de la propiedad
+		String value = "";
+		Map<String, String> result = new HashMap<>();
+		Map<String, String> valuesByTenant = new HashMap<>();
+
+		// Aquí las propiedades son multitenant
+		logger.info("environments: "+environments);
+		logger.info("Special Environments: "+specialDefaultEnvironments);
+		valuesByTenant = getMultitenantValuesFromEnvironment(environment);
+
+		// Si la propiedad no es visible según sus valores, se devuelve vacío
+		if(!isPropertyVisible(value, valuesByTenant)) {
+			wasVisible = false;
+			return result;
+		}
+
+		// Descripción tanto para las propiedades como para las descripciones simples
+		boolean containsComment = false;
+		if(addDescription){
+			containsComment = addElement(propertyComment, description, annotationString);
+		}
+
+		// Estado
+		if(addState){
+			containsComment |= addElement(propertyComment, state,annotationString);
+		}
+
+		// Ejemplo
+		if(addExample){
+			containsComment |= addElement(propertyComment, example,annotationString);
+		}
+
+		// Si existe comentario, se añade un salto de línea para separar el comentario de la propiedad
+		if(containsComment) {
+			propertyComment.append("\n");
+		}
+
+		// Si es multitenant, se obtienen las propiedades multitenant
+		for (Entry<String, String> tenant : valuesByTenant.entrySet()) {
+
+			// Obtención del nombre real de la propiedad
+			String processed = getProcessedMultitenantProperty(assignationAnnotationString, tenant);
+
+			// Inicialización de cada tenant
+			result.put(tenant.getKey(), propertyComment.toString().trim() + "\n" + processed.trim());
+		}
+		return result;
+	}
+
+	/**
+	 * Obtiene la propiedad completa multitenant teniendo en cuenta el cifrado de la propiedad
+	 *
+	 * @param assignationAnnotationString 	Cadena que representa uan asignación en un fichero de propiedades
+	 * @param tenant						Tenant para el que obtener la propiedad completa cifrada.
+	 *
+	 * @return Devuelve la cadena propiedad + valor terminada
+	 */
+	private String getProcessedMultitenantProperty(String assignationAnnotationString, Entry<String, String> tenant) {
+		String realPropertyName = propertyName;
+		boolean cyphered = false;
+		if(propertyName.startsWith(CYPHER_PREFIX)){
+			realPropertyName = propertyName.replace(CYPHER_PREFIX, "");
+			cyphered = true;
+		}
+
+		// Extracción del cifrado de la propiedad
+		String totalProperty = tenant.getKey() + "." + realPropertyName;
+		if(cyphered){
+			totalProperty = CYPHER_PREFIX+totalProperty;
+		}
+
+		// Propiedad y valor
+		return getProcesedPropertyAndValue(
+			totalProperty,
+			tenant.getValue(),
+			assignationAnnotationString
+		);
+	}
+
+	/**
+	 * Permite obtener una cadena representando las propiedades tal cual van a ser mostradas en
+	 * un fichero de propiedades.
+	 *
+	 * @param environment Entorno sobre el que se quiere obtener el documentador.
 	 * @param annotationString Cadena que representa una anotación para una línea en el fichero de propiedades
 	 * @param assignationAnnotationString Cadena que representa uan asignación en un fichero de propiedades
 	 * @param addState Determina si se debe o no añadir el estado en la documentación de la propiedad
 	 * @param addExample Determina si se debe o no añadir el ejemplo en la documentación de la propiedad 
 	 * @param addDescription Determina si se debe o no añadir la descripción en la documentación de la propiedad
-	 * @return Devuelve la cadena que representa la porpiedad compilada
+	 *
+	 * @return Devuelve la cadena que representa la propiedad compilada
 	 * */
 	public String getDocumenterToEnvironmentFile(String environment, String annotationString,
 			String assignationAnnotationString, boolean addDescription, boolean addExample,
@@ -251,10 +364,10 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 			logger.info("environments: "+environments);
 			logger.info("Special Environments: "+specialDefaultEnvironments);
 			valuesByTenant = getMultitenantValuesFromEnvironment(environment);
+		}
 
-			
 		// Si no, se obtienen los valores simples
-		}else {
+		else {
 			value = getValueFromEnvironment(environment);
 		}
 		
@@ -275,12 +388,12 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 			
 			// Estado
 			if(addState){
-				containsComment |= addElement(res, state,annotationString);
+				containsComment |= addElement(res, state, annotationString);
 			}
 			
 			// Ejemplo
 			if(addExample){
-				containsComment |= addElement(res, example,annotationString);
+				containsComment |= addElement(res, example, annotationString);
 			}
 			
 			// Si existe comentario, se añade un salto de línea para separa el comentario de la propiedad
@@ -291,15 +404,18 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 			// Si es multitenant, se obtienen las propiedades multitenant
 			if(isMultitenant) {
 				for (Entry<String, String> tenant : valuesByTenant.entrySet()) {
-					String procesed = getProcesedPropertyAndValue(tenant.getKey()+"."+propertyName, tenant.getValue(), assignationAnnotationString);
-					res.append(procesed+"\n");
+					String processed = getProcessedMultitenantProperty(assignationAnnotationString, tenant);
+					res.append(processed).append("\n");
 				}
 				
 				// Se elimina el último espacio
 				res.delete(res.length()-1, res.length());
-			}else{
-				String procesed = getProcesedPropertyAndValue(propertyName, value, assignationAnnotationString);
-				res.append(procesed);
+			}
+
+			// Si no,se obtiene la propiedad simple
+			else{
+				String processed = getProcesedPropertyAndValue(propertyName, value, assignationAnnotationString);
+				res.append(processed);
 			}
 		}
 		return res.toString();
@@ -308,13 +424,13 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 	/**
 	 * Obtiene los valores multitenant para una propiedad
 	 * 
-	 * @param environment {@link String} Enterono para el que se está compiando la propiedad
+	 * @param environment {@link String} Entorno para el que se está copiando la propiedad
 	 * 
 	 * @return {@link Map} Mapa de valores por tenant
 	 */
 	private Map<String, String> getMultitenantValuesFromEnvironment(String environment) {
 		
-		// Se instancai como como el resultado vacío
+		// Se crea la instancia del resultado como el resultado vacío
 		Map<String, String> valuesByTenant = new HashMap<>();
 				
 		// Se obtienen los tenant por patrón 
@@ -339,7 +455,7 @@ public class DocumenterUnit implements Serializable, Comparable<DocumenterUnit> 
 			valuesByTenant.put(key, getDefaultValue());
 		}
 		
-		// Si no hay tenant por deecto, se añade
+		// Si no hay tenant por defecto, se añade
 		if(!valuesByTenant.containsKey(defaultTenant)) {
 			valuesByTenant.put(defaultTenant, getDefaultValue());
 		}

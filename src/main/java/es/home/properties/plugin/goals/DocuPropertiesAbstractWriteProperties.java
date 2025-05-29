@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +15,8 @@ import es.home.properties.exception.PluginDocumentationExceptionCode;
 import es.home.properties.model.DocumenterUnit;
 import es.home.properties.model.ErrorType;
 import es.home.properties.model.ValidationError;
+
+import static es.home.properties.model.MavenDocumenterPropertiesConfiguration.CYPHER_PREFIX;
 
 public abstract class DocuPropertiesAbstractWriteProperties extends DocuPropertiesAbstractMojo{
 	
@@ -77,7 +78,7 @@ public abstract class DocuPropertiesAbstractWriteProperties extends DocuProperti
 					throwValidationErrors(errors);
 				}
 				
-				// Se otiene el texto a imprimir en el fichero a partir de las unidades de documentación
+				// Se obtiene el texto a imprimir en el fichero a partir de las unidades de documentación
 				String result = getText(units);
 				
 				// Se crea el fichero
@@ -193,30 +194,157 @@ public abstract class DocuPropertiesAbstractWriteProperties extends DocuProperti
 	}
 
 	/**
-	 * Obtiene la cadena a escribir en el ficheor de propiedades resultado
+	 * Obtiene la cadena a escribir en el fichero de propiedades resultado
 	 * @param units Líneas obtenidas del fichero origen
 	 * @return Una instancia de {@link StringBuffer} con el resultado
 	 * */
 	private String getText(List<DocumenterUnit> units) {
-		StringBuilder propertieFileContent = new StringBuilder();
+		StringBuilder propertiesFileContent = new StringBuilder();
 		getLog().debug("Parseando las unidades: "+units);
 		new StringBuffer();
+
+		// Para la impresión ordenada
+		Map<String, List<String>> orderedTenants = new HashMap<>();
+		List<String> defaultValues = new ArrayList<>();
 		for (DocumenterUnit documenterUnit : units) {
-			propertieFileContent.append(documenterUnit.getDocumenterToEnvironmentFile(
-				writeEnvironment,
-				getConfiguration().getAnnotationString()[writeAnnotationString],
-				getConfiguration().getAsignationAnnotationString(),
-				addDescription,
-				addExample,
-				addState
-			));
-			
-			// Se añade separación entre cada propiedad solo si se pudo imprimir
-			if(documenterUnit.isWasVisible()) {
-				propertieFileContent.append("\n\n");
+
+			// Si la unidad es multitenant, ordenada por tenant y es una propiedad
+			if(documenterUnit.isMultitenant() && documenterUnit.isOrderByTenant() && documenterUnit.getPropertyName() != null){
+
+				// Se obtienen los valores de la propiedad multitenant (comentario + propiedad + valor)
+				Map<String, String> valuesByTenant = documenterUnit.getDocumenterToEnvironmentFileOrderedByTenants(
+					writeEnvironment,
+					getConfiguration().getAnnotationString()[writeAnnotationString],
+					getConfiguration().getAsignationAnnotationString(),
+					addDescription,
+					addExample,
+					addState
+				);
+
+				// Se añaden a la lista final
+				for (Map.Entry<String, String> entry: valuesByTenant.entrySet()){
+					String tenant = entry.getKey();
+					String tenantNotCypher = tenant.replace(CYPHER_PREFIX, "");
+					String value = entry.getValue();
+
+					// Se añaden los elementos a la lista por defecto
+					if(getConfiguration().getDefaultTenant().equals(tenantNotCypher)){
+						defaultValues.add(value);
+					}
+
+					// Si no es por defecto, se añade de forma natural
+					else{
+
+						// Se genera la lista para cada tenant
+						if(!orderedTenants.containsKey(tenantNotCypher)){
+							orderedTenants.put(tenantNotCypher, new ArrayList<String>());
+						}
+
+						// Se añade el elemento de tenant
+						orderedTenants.get(tenantNotCypher).add(value);
+					}
+				}
+			}
+
+			// Si no, se ordena por tenant, el append se hace por cada propiedad.
+			else{
+				propertiesFileContent.append(documenterUnit.getDocumenterToEnvironmentFile(
+					writeEnvironment,
+					getConfiguration().getAnnotationString()[writeAnnotationString],
+					getConfiguration().getAsignationAnnotationString(),
+					addDescription,
+					addExample,
+					addState
+				));
+
+				// Se añade separación entre cada propiedad solo si se pudo imprimir
+				if(documenterUnit.isWasVisible()) {
+					propertiesFileContent.append("\n\n");
+				}
 			}
 		}
-		propertieFileContent.delete(propertieFileContent.length()-2, propertieFileContent.length());
-		return propertieFileContent.toString();
+
+		// Si existen tenants ordenables
+		if(!orderedTenants.isEmpty()){
+			List<String> sortedKeys=new ArrayList<>(orderedTenants.keySet());
+			Collections.sort(sortedKeys);
+			for (String sortedKey : sortedKeys){
+				propertiesFileContent.append(tenantHeader(sortedKey, true));
+				propertiesFileContent.append("\n\n");
+				List<String> fullProperties = orderedTenants.get(sortedKey);
+				for (String fullProperty : fullProperties){
+					propertiesFileContent.append(fullProperty);
+					propertiesFileContent.append("\n\n");
+				}
+				propertiesFileContent.append(tenantHeader(sortedKey, false));
+				propertiesFileContent.append("\n\n");
+			}
+		}
+
+		// Bloque multitenant de propiedades ordenadas por tenant, La calve por defecto va al final.
+		if(!defaultValues.isEmpty()){
+			propertiesFileContent.append(tenantHeader(getConfiguration().getDefaultTenant(), true));
+			propertiesFileContent.append("\n\n");
+			for (String defaultValue : defaultValues){
+				propertiesFileContent.append(defaultValue);
+				propertiesFileContent.append("\n\n");
+			}
+			propertiesFileContent.append(tenantHeader(getConfiguration().getDefaultTenant(), false));
+			propertiesFileContent.append("\n\n");
+		}
+
+		// Resultado final
+		propertiesFileContent.delete(propertiesFileContent.length()-2, propertiesFileContent.length());
+		return propertiesFileContent.toString();
+	}
+
+	/**
+	 * Crea el bloque de apertura o cierre de un tenant
+	 *
+	 * @param tenant Tenant sobre el que crear las cabeceras (o piés)
+	 * @param isOpen Determina si crear la apertura o el cierre
+	 * @return Devuelve el bloque deseado
+	 */
+	private String tenantHeader(String tenant, boolean isOpen) {
+		int longitudTexto = tenant.length();
+
+		// Definir longitud total de línea 1 (20 o 21)
+		int longitudLinea = (longitudTexto % 2 == 0) ? 20 : 21;
+
+		// Construir primera línea: solo '#'
+		String linea1 = repeat("#", longitudLinea);
+
+		// Calcular longitud del prefijo y sufijo de '#'
+		int totalHashes = longitudLinea - (longitudTexto + 4);
+
+		int hashesPrefijo = totalHashes / 2;
+		int hashesSufijo = totalHashes - hashesPrefijo;
+
+		String prefijo = repeat("#", hashesPrefijo);
+		String sufijo = repeat("#", hashesSufijo);
+
+		// Construir segunda línea
+		String linea2 = prefijo + "--" + tenant + "--" + sufijo;
+
+		// Apertura o cierre
+		if (isOpen) {
+			return linea1 + "\n" + linea2;
+		} else {
+			return linea2 + "\n" + linea1;
+		}
+	}
+
+	/**
+	 *
+	 * @param headerCharacter carácter de la repetición
+	 * @param times	Número de veces que se repite el carácter
+	 * @return Devuelve el carácter n veces repetido en la cadena
+	 */
+	private String repeat(String headerCharacter, int times) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < times; i++) {
+			sb.append(headerCharacter);
+		}
+		return sb.toString();
 	}
 }
