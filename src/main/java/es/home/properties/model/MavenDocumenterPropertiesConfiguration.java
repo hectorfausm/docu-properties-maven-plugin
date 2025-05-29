@@ -11,6 +11,8 @@ public class MavenDocumenterPropertiesConfiguration {
 
 	public static final String ANNOTATION_DEFINED_STRING = "@";
 	public static final String MULTITENANT_DEFINED_STRING = "$";
+	public static final String CYPHER_PREFIX = "X_";
+
 	
 	//	ELEMENTOS DEL PLUGIN
 	/** Proyecto maven */
@@ -99,6 +101,9 @@ public class MavenDocumenterPropertiesConfiguration {
 	
 	/** Determina que un fichero de propiedades es multitenant */
 	private String multitenantFileAttribute;
+
+	/** Determina que las propiedades de un fichero multitenant se ordenan por tenant en lugar de por propiedades */
+	private String orderByTenants;
 	
 	/** Valor por defecto para el tenant, se usará en caso de encontrar ficheros multitenant */
 	private String defaultTenant;
@@ -122,7 +127,7 @@ public class MavenDocumenterPropertiesConfiguration {
 	/**
 	 * Obtiene el tipo de línea.
 	 * @param line Línea de la que extraer el tipo de línea
-	 * @return Devuleve una instancia de {@link DocumenterLineType}
+	 * @return Devuelve una instancia de {@link DocumenterLineType}
 	 * */
 	public DocumenterLineType getLineType(String line) {
 		DocumenterLineType res = DocumenterLineType.ANYTHING;
@@ -135,12 +140,12 @@ public class MavenDocumenterPropertiesConfiguration {
 		}else if(isLineAnnotation(line)){
 			int firstAnnotationIn = line.indexOf(ANNOTATION_DEFINED_STRING);
 			
-			// Si la línea es una anotción
+			// Si la línea es una anotación
 			if(firstAnnotationIn>0){
 				String lineCopy = line.substring(firstAnnotationIn); 
 				logger.debug("Obteniendo el tipo de la línea a partir de la subcadena: \""+lineCopy+"\"");
 				
-				// Si la línea es un entrono especial para asiognar valores por defecto
+				// Si la línea es un entrono especial para asignar valores por defecto
 				if(lineCopy.startsWith(ANNOTATION_DEFINED_STRING+ANNOTATION_DEFINED_STRING)){
 					res = DocumenterLineType.SPECIAL_DEFAULT_ENVIRONMENT;
 				}else if(lineCopy.startsWith(attrinit)){
@@ -163,10 +168,13 @@ public class MavenDocumenterPropertiesConfiguration {
 					res = DocumenterLineType.PATTERN;
 				}else if(lineCopy.startsWith(multitenantFileAttribute)){
 					res = DocumenterLineType.MULTITENANT;
+				}else if(lineCopy.startsWith(orderByTenants)){
+					res = DocumenterLineType.ORDER_BY_TENANTS;
 				}
-				
+			}
+
 			// Si no, es cualquier cosa imprimible
-			}else{
+			else{
 				res = DocumenterLineType.ANYTHING;
 			}
 		}
@@ -454,6 +462,12 @@ public class MavenDocumenterPropertiesConfiguration {
 	}
 	public void setMultitenantFileAttribute(String multitenantFileAttribute) {
 		this.multitenantFileAttribute = multitenantFileAttribute;
+	}
+	public void setOrderByTenants(String orderByTenants) {
+		this.orderByTenants = orderByTenants;
+	}
+	public String getOrderByTenants() {
+		return orderByTenants;
 	}
 	public void setDefaultTenant(String defaultTenant) {
 		this.defaultTenant = defaultTenant;

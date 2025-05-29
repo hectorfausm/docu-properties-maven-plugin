@@ -141,6 +141,11 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	/** Determina que un fichero de propiedades es multitenant */
 	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"MultitenantFile")
 	private String multitenantFileAttribute;
+
+	/** Determina si un fichero de propiedades multitenant se ordena por tenants o por propiedades */
+	@Parameter(defaultValue = MavenDocumenterPropertiesConfiguration.ANNOTATION_DEFINED_STRING+"OrderByTenants")
+	private String orderByTenants;
+
 	
 	/** 
 	 * <pre>
@@ -217,15 +222,15 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			this.configuration.setValidate(this.validate);
 			this.configuration.setExcludes(this.excludes);
 			this.configuration.setMultitenantFileAttribute(this.multitenantFileAttribute);
+			this.configuration.setOrderByTenants(this.orderByTenants);
 			this.configuration.setDefaultTenant(this.defaultTenant);
 		}
 		return this.configuration;
 	}
 
 	/**
-	 * Permite procesar los recoursos de un path
+	 * Permite procesar los recursos de un path
 	 * @param resourcePath Path a procesar
-	 * @throws PluginDocumentationException 
 	 * */
 	protected void proccessPath(String resourcePath) throws PluginDocumentationException {
 		getLog().info("Codificando los recursos alojados en: "+resourcePath);
@@ -252,13 +257,12 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 
 	/** 
 	 * Permite procesar un fichero de texto y documentarlo
-	 * @param file Fichero a procesar 
-	 * @throws PluginDocumentationException 
+	 * @param file Fichero a procesar
 	 */
 	public abstract void proccesFile(Path file) throws PluginDocumentationException;
 
 	/**
-	 * Obtiene un documentador singleton a partir de la factoría fde documentadores
+	 * Obtiene un documentador singleton a partir de la factoría de documentadores
 	 * @return Devuelva la instancia de {@link MavenPropertiesDocumenter} que se crea pro configuración
 	 * */
 	public MavenPropertiesDocumenter getDocumenter() {
@@ -270,7 +274,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	
 	// METODOS PRIVADOS
 	/**
-	 * Determina si la extensión del nombre del fichero se encunetra entre las extensiones permitidas por
+	 * Determina si la extensión del nombre del fichero se encuentra entre las extensiones permitidas por
 	 * configuración
 	 * @param fileName Nombre del fichero a comprobar.
 	 * @return Devuelve true si la extensión está permitida, en caso contrario, devuelve false.
@@ -287,11 +291,11 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	}
 
 	/**
-	 * Permite obtener las unidades de documentación a partir de la líneas de un fichero
+	 * Permite obtener las unidades de documentación a partir de las líneas de un fichero
 	 * de propiedades
 	 * @param lines Líneas del fichero de propiedades a analizar
-	 * @return Devuelve una lista de {@link DocumenterUnit} con la infomrmación de documentación
-	 * de las undiades
+	 * @return Devuelve una lista de {@link DocumenterUnit} con la información de documentación
+	 * de las unidades
 	 * */
 	protected List<DocumenterUnit> getDocumenterUnitsFromLines(List<String> lines) {
 		getLog().debug("Obteniendo las unidades de documentación");
@@ -307,6 +311,14 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			isMultitenant = true;
 			lines.remove(multitenantPosition);
 		}
+
+		// Se determina si el fichero es o no multitenant
+		int orderByTenants = getFileOrderByTenantsPosition(lines);
+		boolean isOrderByTenants = false;
+		if(orderByTenants>=0) {
+			isOrderByTenants = true;
+			lines.remove(orderByTenants);
+		}
 		
 		// Se recorre el resto de líneas
 		for (String line : lines) {
@@ -314,7 +326,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 			getLog().debug("Obteniendo la información de la línea: \""+line+"\" y tipo: "+type);
 			switch(type){
 				case INIT:
-					auxDocumenterUnit = setInitValue(auxDocumenterUnit, lastDocumenterLineType, isMultitenant);
+					auxDocumenterUnit = setInitValue(auxDocumenterUnit, lastDocumenterLineType, isMultitenant, isOrderByTenants);
 					lastDocumenterLineType = DocumenterLineType.INIT;
 					startDocumenterUnit = true;
 					break;
@@ -359,7 +371,7 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 					lastDocumenterLineType = DocumenterLineType.VISIBLE_WITH_VALUE;
 					break;
 				case INIT_SIMPLE_COMMENT:
-					auxDocumenterUnit = setInitValue(auxDocumenterUnit, lastDocumenterLineType, isMultitenant);
+					auxDocumenterUnit = setInitValue(auxDocumenterUnit, lastDocumenterLineType, isMultitenant, isOrderByTenants);
 					lastDocumenterLineType = DocumenterLineType.INIT_SIMPLE_COMMENT;
 					startDocumenterUnit = true;
 					break;
@@ -383,6 +395,24 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 		for (int i = 0; i < size; i++) {
 			DocumenterLineType type = getConfiguration().getLineType(lines.get(0));
 			if(DocumenterLineType.MULTITENANT.equals(type)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Obtiene la posición que ocupa la línea que indicia que un fichero de propiedades es multitenant
+	 *
+	 * @param lines {@link List<String>} Líneas en las que realizar la búsqueda
+	 *
+	 * @return {@link Integer}. -1 si no encuentra una línea que indique el fichero es multitenant o false en caso contrario
+	 */
+	private int getFileOrderByTenantsPosition(List<String> lines) {
+		int size = lines.size();
+		for (int i = 0; i < size; i++) {
+			DocumenterLineType type = getConfiguration().getLineType(lines.get(0));
+			if(DocumenterLineType.ORDER_BY_TENANTS.equals(type)) {
 				return i;
 			}
 		}
@@ -580,11 +610,12 @@ public abstract class DocuPropertiesAbstractMojo extends AbstractMojo{
 	 * Establece un valor inicial para una unidad de documentación
 	 * @return 
 	 * */
-	private DocumenterUnit setInitValue(DocumenterUnit auxDocumenterUnit, DocumenterLineType lastDocumenterLineType, boolean isMultitenant) {
+	private DocumenterUnit setInitValue(DocumenterUnit auxDocumenterUnit, DocumenterLineType lastDocumenterLineType, boolean isMultitenant, boolean isOrderByTenant) {
 		getLog().debug("Iniciando una unidad de documentación");
 		auxDocumenterUnit = new DocumenterUnit(getLog());
 		auxDocumenterUnit.setMultitenant(isMultitenant);
 		if(isMultitenant) {
+			auxDocumenterUnit.setOrderByTenants(isOrderByTenant);
 			auxDocumenterUnit.setDefaultTenant(getConfiguration().getDefaultTenant());
 		}
 		return auxDocumenterUnit;
