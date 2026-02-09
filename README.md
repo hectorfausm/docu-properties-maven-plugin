@@ -122,7 +122,7 @@ Ejemplo de configuración para el mojo: ``docu-properties-input-write`` (tabla 1
 			<variable>
 				<key>TEST_KEY</key>
 				<value>World</value>
-			</variables>
+			</variable>
 		</variables>
 	</configuration>
 </plugin>
@@ -157,7 +157,7 @@ Ejemplo de configuración para el mojo: ``docu-properties-inputsoutputs-write`` 
 			<variable>
 				<key>TEST_KEY</key>
 				<value>World</value>
-			</variables>
+			</variable>
 		</variables>
 		<propertiesPaths>
 			<propertiesPath>
@@ -285,3 +285,4 @@ read.charsets | String[] | Atributo que determina el conjunto de charset por def
 write.charset | String | Atributo que determina el charset por defecto para la escritura de los ficheros de propiedades. | UTF-8.
 write.environment | String | Entorno para el que será compilado el fichero resultado de propiedades
 variables | Variable: key-value | Variables con clave valor que permite sustituir elementos en el fichero de propiedades. las variables se incluyen con ${KEY} y se sustituye por el valor indicado | null
+
